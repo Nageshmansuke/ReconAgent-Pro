@@ -3,18 +3,19 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
-const dirname = path.dirname(new URL(import.meta.url).pathname).replace(/^\/([A-Z]:)/, '$1');
-
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  root: path.resolve(dirname, 'client'),
+  root: path.resolve(import.meta.dirname, '.'),
   build: {
-    outDir: path.resolve(dirname, 'public'),
+    outDir: path.resolve(import.meta.dirname, '../public'),
     emptyOutDir: true
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:3000'
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      }
     }
   }
 });

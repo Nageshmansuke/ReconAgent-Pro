@@ -70,7 +70,6 @@ export default function AuditTable({ auditLogs }) {
           <tbody>
             {filteredLogs.map((item, idx) => {
               const confidenceStr = item.confidence ? `${Math.round(item.confidence * 100)}%` : '—';
-              const isUnresolved = item.resolving_layer === 'none';
 
               return (
                 <tr key={idx}>

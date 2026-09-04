@@ -23,6 +23,26 @@
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
+.light {
+  --bg-base: #F3F4F6;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #F9FAFB;
+  
+  --border-subtle: #E5E7EB;
+  --border-hover: #D1D5DB;
+
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --text-tertiary: #9CA3AF;
+
+  --accent-blue: #3B82F6;
+  --accent-blue-glow: rgba(59, 130, 246, 0.15);
+
+  --color-success: #10B981;
+  --color-caution: #F59E0B;
+  --color-danger: #EF4444;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -45,7 +65,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Page Container */
+/* Page Layout */
 .terminal-layout {
   max-width: 1240px;
   margin: 0 auto;
@@ -69,7 +89,7 @@ body {
   border-color: var(--border-hover);
 }
 
-/* Header Action Buttons */
+/* Buttons */
 .btn-ghost {
   display: inline-flex;
   align-items: center;
@@ -119,7 +139,7 @@ body {
   cursor: not-allowed;
 }
 
-/* Metric Cards Grid */
+/* Metric Grid */
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -178,7 +198,7 @@ body {
   color: var(--text-secondary);
 }
 
-/* Stepped Horizontal Layer Funnel */
+/* Stepped Horizontal Funnel */
 .stepped-funnel {
   display: flex;
   align-items: center;
@@ -227,7 +247,7 @@ body {
   }
 }
 
-/* Underline Tabs Navigation */
+/* Underline Tabs */
 .terminal-tabs-bar {
   display: flex;
   align-items: center;
@@ -293,7 +313,7 @@ body {
   background-color: var(--bg-surface-elevated);
 }
 
-/* Input Fields */
+/* Inputs */
 .terminal-input {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -310,7 +330,7 @@ body {
   box-shadow: 0 0 0 2px var(--accent-blue-glow);
 }
 
-/* Small Quiet Status Dot */
+/* Status Dot */
 .status-dot {
   width: 6px;
   height: 6px;

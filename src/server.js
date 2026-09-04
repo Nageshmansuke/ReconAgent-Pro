@@ -7,6 +7,8 @@ import { generateSyntheticData } from './generator.js';
 import { runPipeline } from './pipeline.js';
 import { parseCSV, normalizeSettlementData, normalizeLedgerData } from './parsers/csvParser.js';
 import { generateAlerts } from './notifications/alertEngine.js';
+import { detectFraudAnomalies } from './security/fraudDetector.js';
+import { queryFinanceCopilot } from './copilot/financeCopilot.js';
 
 dotenv.config();
 
@@ -23,7 +25,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', service: 'ReconAgent', version: '1.2.0' });
+  res.json({ status: 'ok', service: 'ReconAgent Pro', version: '2.5.0' });
 });
 
 // Generate synthetic datasets
@@ -77,17 +79,22 @@ app.post('/api/upload-and-reconcile', async (req, res) => {
 
     const results = await runPipeline({ simulateFailure: simulateFailure === true });
 
-    // Generate financial risk alerts
     const auditPath = path.join(DATA_DIR, 'audit_log.json');
     const auditLog = fs.existsSync(auditPath) ? JSON.parse(fs.readFileSync(auditPath, 'utf8')) : [];
+    
+    // Generate risk alerts & security anomalies
     const alerts = generateAlerts(results, auditLog);
+    const securityAnomalies = detectFraudAnomalies(settlementsNormalized, ledgerNormalized, auditLog);
+
     fs.writeFileSync(path.join(DATA_DIR, 'alerts.json'), JSON.stringify(alerts, null, 2));
+    fs.writeFileSync(path.join(DATA_DIR, 'security.json'), JSON.stringify(securityAnomalies, null, 2));
 
     res.json({
       success: true,
       message: `Reconciled ${settlementsNormalized.length} settlements against ${ledgerNormalized.length} ledger orders successfully.`,
       results,
-      alerts
+      alerts,
+      securityAnomalies
     });
   } catch (err) {
     console.error('Error processing real data files:', err);
@@ -101,43 +108,60 @@ app.post('/api/reconcile', async (req, res) => {
     const simulateFailure = req.body?.simulateFailure === true;
     const results = await runPipeline({ simulateFailure });
 
-    // Generate financial risk alerts
+    const settlementsPath = path.join(DATA_DIR, 'gateway_settlements.json');
+    const ledgerPath = path.join(DATA_DIR, 'internal_ledger.json');
     const auditPath = path.join(DATA_DIR, 'audit_log.json');
+
+    const settlements = fs.existsSync(settlementsPath) ? JSON.parse(fs.readFileSync(settlementsPath, 'utf8')) : [];
+    const ledger = fs.existsSync(ledgerPath) ? JSON.parse(fs.readFileSync(ledgerPath, 'utf8')) : [];
     const auditLog = fs.existsSync(auditPath) ? JSON.parse(fs.readFileSync(auditPath, 'utf8')) : [];
+
     const alerts = generateAlerts(results, auditLog);
+    const securityAnomalies = detectFraudAnomalies(settlements, ledger, auditLog);
+
     fs.writeFileSync(path.join(DATA_DIR, 'alerts.json'), JSON.stringify(alerts, null, 2));
+    fs.writeFileSync(path.join(DATA_DIR, 'security.json'), JSON.stringify(securityAnomalies, null, 2));
 
     res.json({
       success: true,
       message: 'Reconciliation pipeline completed successfully.',
       results,
-      alerts
+      alerts,
+      securityAnomalies
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// Fetch latest notifications & alerts
-app.get('/api/notifications', (req, res) => {
+// Natural Language Ask Recon Copilot Route
+app.post('/api/copilot/query', async (req, res) => {
   try {
-    const alertsPath = path.join(DATA_DIR, 'alerts.json');
-    if (!fs.existsSync(alertsPath)) {
-      return res.json({ hasAlerts: false, alerts: [] });
+    const { query } = req.body;
+    if (!query) {
+      return res.status(400).json({ success: false, error: 'Query is required.' });
     }
-    const alerts = JSON.parse(fs.readFileSync(alertsPath, 'utf8'));
-    res.json({ hasAlerts: true, alerts });
+
+    const resultsPath = path.join(DATA_DIR, 'results.json');
+    const auditPath = path.join(DATA_DIR, 'audit_log.json');
+
+    const results = fs.existsSync(resultsPath) ? JSON.parse(fs.readFileSync(resultsPath, 'utf8')) : {};
+    const auditLog = fs.existsSync(auditPath) ? JSON.parse(fs.readFileSync(auditPath, 'utf8')) : [];
+
+    const copilotAnswer = await queryFinanceCopilot(query, results, auditLog);
+    res.json({ success: true, copilotAnswer });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// Fetch latest results and audit log
+// Fetch latest results, audit log, alerts & security
 app.get('/api/results', (req, res) => {
   try {
     const resultsPath = path.join(DATA_DIR, 'results.json');
     const auditPath = path.join(DATA_DIR, 'audit_log.json');
     const alertsPath = path.join(DATA_DIR, 'alerts.json');
+    const securityPath = path.join(DATA_DIR, 'security.json');
 
     if (!fs.existsSync(resultsPath)) {
       return res.json({
@@ -149,12 +173,14 @@ app.get('/api/results', (req, res) => {
     const results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
     const auditLog = fs.existsSync(auditPath) ? JSON.parse(fs.readFileSync(auditPath, 'utf8')) : [];
     const alerts = fs.existsSync(alertsPath) ? JSON.parse(fs.readFileSync(alertsPath, 'utf8')) : [];
+    const securityAnomalies = fs.existsSync(securityPath) ? JSON.parse(fs.readFileSync(securityPath, 'utf8')) : [];
 
     res.json({
       hasData: true,
       results,
       auditLog,
-      alerts
+      alerts,
+      securityAnomalies
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

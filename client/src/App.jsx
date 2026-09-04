@@ -6,17 +6,22 @@ import UploadModal from './components/UploadModal.jsx';
 import AuditTable from './components/AuditTable.jsx';
 import AlertsTab from './components/AlertsTab.jsx';
 import ExceptionsTab from './components/ExceptionsTab.jsx';
-import { Bell, FileText, AlertTriangle } from 'lucide-react';
+import SecurityRadarTab from './components/SecurityRadarTab.jsx';
+import AskReconCopilot from './components/AskReconCopilot.jsx';
+import AuditCertificateModal from './components/AuditCertificateModal.jsx';
+import { Bell, FileText, AlertTriangle, ShieldAlert, Award } from 'lucide-react';
 
 export default function App() {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('alerts');
+  const [isCertOpen, setIsCertOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('alerts'); // 'alerts' | 'security' | 'audit' | 'exceptions'
   const [loadingAction, setLoadingAction] = useState(null);
   const [statusMessage, setStatusMessage] = useState(null);
 
   const [results, setResults] = useState(null);
   const [auditLogs, setAuditLogs] = useState([]);
   const [alerts, setAlerts] = useState([]);
+  const [securityAnomalies, setSecurityAnomalies] = useState([]);
 
   useEffect(() => {
     fetchResults();
@@ -30,6 +35,7 @@ export default function App() {
         setResults(data.results);
         setAuditLogs(data.auditLog || []);
         setAlerts(data.alerts || []);
+        setSecurityAnomalies(data.securityAnomalies || []);
       }
     } catch (err) {
       console.error('Error fetching initial results:', err);
@@ -77,6 +83,7 @@ export default function App() {
         setResults(data.results);
         setAuditLogs(data.results.matched ? [...data.results.matched, ...(data.results.exceptions?.unresolvedSettlements || [])] : []);
         setAlerts(data.alerts || []);
+        setSecurityAnomalies(data.securityAnomalies || []);
 
         if (simulateFailure) {
           setStatusMessage({
@@ -136,47 +143,74 @@ export default function App() {
         <KpiGrid metrics={results?.metrics} />
         <LayerBreakdown layerBreakdown={results?.metrics?.layerBreakdown} />
 
-        {/* Tab Controls */}
-        <div className="flex items-center gap-2 mb-4 border-b border-[#1E2532] pb-2">
-          <button
-            onClick={() => setActiveTab('alerts')}
-            className={`btn-tab flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-              activeTab === 'alerts'
-                ? 'bg-[#12161F] text-[#F5C453] border border-[#1E2532]'
-                : 'text-[#9CA3AF] hover:text-white'
-            }`}
-          >
-            <Bell className="w-4 h-4 text-[#F5C453]" />
-            Alerts Center ({alerts.length})
-          </button>
+        {/* Feature 4: Natural Language Ask Recon Finance Copilot */}
+        <AskReconCopilot />
 
-          <button
-            onClick={() => setActiveTab('audit')}
-            className={`btn-tab flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-              activeTab === 'audit'
-                ? 'bg-[#12161F] text-[#38BDF8] border border-[#1E2532]'
-                : 'text-[#9CA3AF] hover:text-white'
-            }`}
-          >
-            <FileText className="w-4 h-4 text-[#38BDF8]" />
-            Audit Trail ({auditLogs.length})
-          </button>
+        {/* Tab Controls & Feature 5 Certificate Button */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4 border-b border-[#1E2532] pb-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveTab('alerts')}
+              className={`btn-tab flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                activeTab === 'alerts'
+                  ? 'bg-[#12161F] text-[#F5C453] border border-[#1E2532]'
+                  : 'text-[#9CA3AF] hover:text-white'
+              }`}
+            >
+              <Bell className="w-4 h-4 text-[#F5C453]" />
+              Alerts Center ({alerts.length})
+            </button>
 
+            <button
+              onClick={() => setActiveTab('security')}
+              className={`btn-tab flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                activeTab === 'security'
+                  ? 'bg-[#12161F] text-[#F43F5E] border border-[#1E2532]'
+                  : 'text-[#9CA3AF] hover:text-white'
+              }`}
+            >
+              <ShieldAlert className="w-4 h-4 text-[#F43F5E]" />
+              Fraud & Security Radar ({securityAnomalies.length})
+            </button>
+
+            <button
+              onClick={() => setActiveTab('audit')}
+              className={`btn-tab flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                activeTab === 'audit'
+                  ? 'bg-[#12161F] text-[#38BDF8] border border-[#1E2532]'
+                  : 'text-[#9CA3AF] hover:text-white'
+              }`}
+            >
+              <FileText className="w-4 h-4 text-[#38BDF8]" />
+              Audit Trail ({auditLogs.length})
+            </button>
+
+            <button
+              onClick={() => setActiveTab('exceptions')}
+              className={`btn-tab flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                activeTab === 'exceptions'
+                  ? 'bg-[#12161F] text-[#F43F5E] border border-[#1E2532]'
+                  : 'text-[#9CA3AF] hover:text-white'
+              }`}
+            >
+              <AlertTriangle className="w-4 h-4 text-[#F43F5E]" />
+              Honest Exceptions ({unresolvedCount})
+            </button>
+          </div>
+
+          {/* Feature 5: Auditor & CA Sign-Off Certificate Button */}
           <button
-            onClick={() => setActiveTab('exceptions')}
-            className={`btn-tab flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-              activeTab === 'exceptions'
-                ? 'bg-[#12161F] text-[#F43F5E] border border-[#1E2532]'
-                : 'text-[#9CA3AF] hover:text-white'
-            }`}
+            onClick={() => setIsCertOpen(true)}
+            className="btn btn-gold text-xs py-1.5"
           >
-            <AlertTriangle className="w-4 h-4 text-[#F43F5E]" />
-            Honest Exceptions ({unresolvedCount})
+            <Award className="w-4 h-4" />
+            📜 CA Audit Certificate
           </button>
         </div>
 
         {/* Tab Content */}
         {activeTab === 'alerts' && <AlertsTab alerts={alerts} />}
+        {activeTab === 'security' && <SecurityRadarTab securityAnomalies={securityAnomalies} />}
         {activeTab === 'audit' && <AuditTable auditLogs={auditLogs} />}
         {activeTab === 'exceptions' && <ExceptionsTab exceptions={results?.exceptions} />}
       </main>
@@ -185,6 +219,12 @@ export default function App() {
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
         onUploadSuccess={handleRealUploadSuccess}
+      />
+
+      <AuditCertificateModal
+        isOpen={isCertOpen}
+        onClose={() => setIsCertOpen(false)}
+        results={results}
       />
 
       <footer className="mt-12 pt-6 border-t border-[#1E2532] text-center text-xs text-[#9CA3AF]">

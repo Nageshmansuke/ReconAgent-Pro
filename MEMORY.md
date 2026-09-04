@@ -28,12 +28,13 @@ Each entry should be short and factual: what happened, what you decided, what's 
 - **Next step:** Phase 2: Layer 1 (Exact Match matcher + unit tests).
 
 
-### [Timestamp] — Phase 2: Exact Match
-- **What happened:**
-- **Decisions made:**
-- **Currently working:**
-- **Blockers/issues:**
-- **Next step:**
+### [2026-09-04] — Phase 2: Exact Match
+- **What happened:** Implemented `src/matchers/exact.js` and unit tests in `test/exact.test.js`. Covered exact reference/UTR matches, fee deductions, and amount tolerance edge cases.
+- **Decisions made:** Evaluated both gross and net/fee-adjusted amounts against gross order amounts with a 0.05 tolerance window.
+- **Currently working:** All unit tests passing (`node --test test/exact.test.js`). Running exact.js against synthetic dataset yielded 63 matches, leaving 9 settlements and 6 ledger records for Phase 3.
+- **Blockers/issues:** None.
+- **Next step:** Phase 3: Layer 2 (Fuzzy Match matcher + unit tests).
+
 
 ### [Timestamp] — Phase 3: Fuzzy Match
 - **What happened:**

@@ -219,7 +219,8 @@ export function generateSyntheticData(seed = 12345) {
 
     // Create deliberate typo in payment_id or UTR
     const settlRef = tc.refTypo ? baseRef.slice(0, -2) + 'XX' : baseRef;
-    const settlUTR = !tc.refTypo ? baseUTR.slice(0, -2) + '99' : baseUTR;
+    const settlUTR = tc.refTypo ? baseUTR.slice(0, -2) + 'XX' : baseUTR.slice(0, -2) + '99';
+
 
     settlements.push({
       settlement_id: sId,

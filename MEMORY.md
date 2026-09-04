@@ -36,12 +36,13 @@ Each entry should be short and factual: what happened, what you decided, what's 
 - **Next step:** Phase 3: Layer 2 (Fuzzy Match matcher + unit tests).
 
 
-### [Timestamp] — Phase 3: Fuzzy Match
-- **What happened:**
-- **Decisions made:**
-- **Currently working:**
-- **Blockers/issues:**
-- **Next step:**
+### [2026-09-04] — Phase 3: Fuzzy Match
+- **What happened:** Implemented `src/matchers/fuzzy.js` using `string-similarity` on names/refs/UTRs with date window (+/- 7 days) and exact amount matching. Added unit tests in `test/fuzzy.test.js`.
+- **Decisions made:** Required composite score >= 0.75 for deterministic fuzzy match. Adjusted synthetic generator typo noise so typos affect both ref and UTR.
+- **Currently working:** Unit tests passing (`node --test test/*.test.js`). Pipeline sequence L1 -> L2 resolves 56 exact matches + 7 fuzzy matches, leaving 9 settlements and 6 ledger records for Layer 3.
+- **Blockers/issues:** None.
+- **Next step:** Phase 4: Layer 3 (AI Escalation matcher + failure fallback test).
+
 
 ### [Timestamp] — Phase 4: AI Escalation
 - **What happened:**

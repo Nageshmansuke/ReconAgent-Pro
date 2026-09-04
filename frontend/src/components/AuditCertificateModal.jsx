@@ -14,8 +14,8 @@ export default function AuditCertificateModal({ isOpen, onClose, results }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] w-full max-w-2xl rounded-lg p-6 text-[var(--text-primary)] relative shadow-2xl my-8 print:p-0 print:border-none print:bg-white print:text-black">
+    <div className="certificate-overlay">
+      <div className="certificate-modal print:p-0 print:border-none print:bg-white print:text-black">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1 rounded print:hidden"
@@ -25,7 +25,7 @@ export default function AuditCertificateModal({ isOpen, onClose, results }) {
 
         {/* Certificate Header */}
         <div className="text-center border-b border-[var(--border-subtle)] pb-4 mb-6 print:border-black">
-          <h2 className="text-base font-bold uppercase tracking-wider text-[var(--text-primary)] print:text-black">
+            <h2 className="text-base font-bold uppercase tracking-wider text-[var(--text-primary)] print:text-black">
             FINANCIAL RECONCILIATION & AUDIT CERTIFICATE
           </h2>
           <p className="text-xs font-mono-numbers text-[var(--text-secondary)] mt-1 print:text-black">
@@ -81,7 +81,7 @@ export default function AuditCertificateModal({ isOpen, onClose, results }) {
                     <tr key={i}>
                       <td className="p-2 font-mono-numbers text-[var(--text-primary)] print:text-black">{ex.settlement_id}</td>
                       <td className="p-2 font-mono-numbers font-medium">₹{ex.amount?.toLocaleString('en-IN')}</td>
-                      <td className="p-2 text-[var(--color-danger)] print:text-black">{ex.unresolved_reason}</td>
+                      <td className="p-2 text-[var(--color-danger)] print:text-black">{ex.unresolved_reason || ex.reason || 'Flagged for review'}</td>
                     </tr>
                   ))
                 )}
@@ -107,8 +107,8 @@ export default function AuditCertificateModal({ isOpen, onClose, results }) {
 
         {/* Modal Actions */}
         <div className="flex justify-end gap-3 mt-6 print:hidden">
-          <button onClick={onClose} className="btn-ghost text-xs">Close</button>
-          <button onClick={handlePrint} className="btn-primary-accent text-xs">
+          <button onClick={onClose} className="secondary-btn text-xs">Close</button>
+          <button onClick={handlePrint} className="primary-btn text-xs">
             Print / Save PDF Certificate
           </button>
         </div>

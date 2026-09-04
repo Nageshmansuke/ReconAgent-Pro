@@ -1,50 +1,7 @@
 import React from 'react';
-
+import { Eye, Fingerprint, LockKeyhole, ShieldCheck, Siren } from 'lucide-react';
 export default function SecurityRadarTab({ securityAnomalies }) {
-  if (!securityAnomalies || securityAnomalies.length === 0) {
-    return (
-      <div className="terminal-card p-6 text-center text-xs text-[var(--text-secondary)]">
-        ✓ Ghost payout & UTR recycling detector active. No security anomalies flagged.
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-3">
-      {securityAnomalies.map((item, idx) => (
-        <div
-          key={idx}
-          className="p-4 rounded border border-[var(--border-subtle)] bg-[var(--bg-surface)] flex flex-col gap-2"
-        >
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="status-dot status-dot-danger"></span>
-              <span className="text-xs font-semibold text-[var(--text-primary)]">{item.type}</span>
-              <span className="text-[11px] font-mono text-[var(--color-danger)] uppercase">{item.severity}</span>
-            </div>
-            <span className="text-xs font-mono-numbers text-[var(--text-tertiary)]">{new Date(item.timestamp).toLocaleTimeString()}</span>
-          </div>
-
-          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{item.details}</p>
-
-          {item.affectedRecords && item.affectedRecords.length > 0 && (
-            <div className="p-2.5 rounded bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)]">
-              <span className="text-[11px] font-mono text-[var(--text-tertiary)] block mb-1">Flagged Records:</span>
-              <div className="flex flex-wrap gap-2">
-                {item.affectedRecords.map((rec, rIdx) => (
-                  <span key={rIdx} className="text-xs font-mono-numbers text-[var(--text-primary)]">
-                    {rec.settlement_id || rec.utr} (₹{rec.amount?.toLocaleString('en-IN')})
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="text-xs text-[var(--color-danger)] pt-1 border-t border-[var(--border-subtle)]">
-            <strong>Mitigation:</strong> {item.mitigation}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  const items = securityAnomalies || [];
+  if (!items.length) return <div className="workspace-empty"><ShieldCheck size={28} /><div><strong>Radar is quiet</strong><p>Ghost payout and UTR recycling detectors are active. No security anomalies flagged.</p></div></div>;
+  return <div className="data-workspace"><div className="security-banner"><div className="radar-pulse"><Eye size={22} /></div><div><span className="eyebrow">Threat surface</span><strong>{items.length} anomal{items.length === 1 ? 'y' : 'ies'} require attention</strong><p>Signals are ordered by severity and connected records.</p></div><div className="security-status"><LockKeyhole size={15} /> MONITORING</div></div><div className="security-list">{items.map((item, idx) => <article className="security-card" key={idx}><div className="security-card-head"><div className="security-type"><div className="security-icon"><Siren size={18} /></div><div><span className="severity-label danger-text">{item.severity || 'HIGH'} RISK</span><h3>{item.type}</h3></div></div><Fingerprint size={19} className="faint-icon" /></div><p className="security-detail">{item.details}</p>{item.affectedRecords?.length > 0 && <div className="affected-records"><span>Affected records</span><div>{item.affectedRecords.map((rec, rIdx) => <div className="record-pill" key={rIdx}><b>{rec.settlement_id || rec.utr}</b><span>₹{rec.amount?.toLocaleString('en-IN')}</span></div>)}</div></div>}<div className="mitigation"><span>Mitigation</span><strong>{item.mitigation}</strong></div></article>)}</div></div>;
 }

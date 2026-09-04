@@ -1,45 +1,7 @@
 import React from 'react';
-
+import { ArrowRight, CircleAlert, FileWarning, PencilLine } from 'lucide-react';
 export default function ExceptionsTab({ exceptions }) {
   const unresolved = exceptions?.unresolvedSettlements || [];
-
-  if (unresolved.length === 0) {
-    return (
-      <div className="terminal-card p-6 text-center text-xs text-[var(--text-secondary)]">
-        ✓ Zero unresolved exceptions. 100% of settlement records matched.
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-3">
-      {unresolved.map((item, idx) => (
-        <div
-          key={idx}
-          className="p-4 rounded border border-[var(--border-subtle)] bg-[var(--bg-surface)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-        >
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <span className="status-dot status-dot-danger"></span>
-              <span className="font-mono-numbers text-xs font-semibold text-[var(--text-primary)]">{item.settlement_id}</span>
-              <span className="text-[11px] font-mono text-[var(--color-danger)]">UNRESOLVED</span>
-            </div>
-            <p className="text-xs text-[var(--text-secondary)]">
-              Amount: <strong className="font-mono-numbers text-[var(--text-primary)]">₹{item.amount?.toLocaleString('en-IN')}</strong> | UTR: <span className="font-mono-numbers text-[var(--text-secondary)]">{item.utr || 'N/A'}</span>
-            </p>
-            <p className="text-xs text-[var(--color-danger)]">{item.reason}</p>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <button className="btn-ghost text-xs py-1 px-3">
-              Force Match
-            </button>
-            <button className="btn-ghost text-xs py-1 px-3 text-[var(--color-danger)]">
-              Write-Off
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  if (!unresolved.length) return <div className="workspace-empty"><FileWarning size={28} /><div><strong>No exception debt</strong><p>Zero unresolved exceptions. Every settlement record is currently matched.</p></div></div>;
+  return <div className="data-workspace"><div className="queue-header"><div><span className="eyebrow">Human review queue</span><strong>{unresolved.length} records need a decision</strong><p>Resolve, force match, or write off each item with a clear audit trail.</p></div><div className="queue-total"><span>Open exposure</span><b>₹{unresolved.reduce((sum, item) => sum + (Number(item.amount) || 0), 0).toLocaleString('en-IN')}</b></div></div><div className="exception-list">{unresolved.map((item, idx) => <article className="exception-card" key={idx}><div className="exception-ident"><div className="exception-icon"><CircleAlert size={18} /></div><div><span className="severity-label danger-text">UNRESOLVED</span><h3>{item.settlement_id}</h3><p>{item.reason}</p></div></div><div className="exception-facts"><span><small>Amount</small><b>₹{item.amount?.toLocaleString('en-IN')}</b></span><span><small>UTR</small><b>{item.utr || 'Not available'}</b></span></div><div className="exception-actions"><button className="secondary-btn"><PencilLine size={15} /> Force match</button><button className="danger-btn">Write off <ArrowRight size={15} /></button></div></article>)}</div></div>;
 }

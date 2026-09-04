@@ -1,40 +1,7 @@
 import React from 'react';
-
+import { AlertTriangle, ArrowUpRight, CheckCircle2, Clock3, ShieldAlert } from 'lucide-react';
 export default function AlertsTab({ alerts }) {
-  if (!alerts || alerts.length === 0) {
-    return (
-      <div className="terminal-card p-6 text-center text-xs text-[var(--text-secondary)]">
-        ✓ No financial alerts or anomalies detected. Settlement data verified.
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-3">
-      {alerts.map((alert, idx) => (
-        <div
-          key={idx}
-          className="p-4 rounded border border-[var(--border-subtle)] bg-[var(--bg-surface)] flex flex-col gap-1.5"
-        >
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className={`status-dot ${
-                alert.severity === 'HIGH' ? 'status-dot-danger' :
-                alert.severity === 'MEDIUM' ? 'status-dot-caution' : 'status-dot-success'
-              }`}></span>
-              <span className="text-xs font-semibold text-[var(--text-primary)]">{alert.title}</span>
-            </div>
-            <span className="text-xs font-mono-numbers text-[var(--text-tertiary)]">
-              {new Date(alert.timestamp).toLocaleTimeString()}
-            </span>
-          </div>
-
-          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{alert.message}</p>
-          <div className="text-xs text-[var(--text-secondary)] pt-1 border-t border-[var(--border-subtle)] mt-1">
-            <strong>Recommended Action:</strong> {alert.action}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  const items = alerts || [], high = items.filter(item => item.severity === 'HIGH').length, medium = items.filter(item => item.severity === 'MEDIUM').length;
+  if (!items.length) return <div className="workspace-empty"><CheckCircle2 size={28} /><div><strong>All clear for now</strong><p>No financial alerts or anomalies were detected in the latest run.</p></div></div>;
+  return <div className="data-workspace"><div className="insight-strip"><div><span className="eyebrow">Signal overview</span><strong>{items.length} active signals</strong><small>Review recommended actions below</small></div><div className="signal-counts"><span className="high"><b>{high}</b> high</span><span className="medium"><b>{medium}</b> medium</span><span className="low"><b>{items.length - high - medium}</b> low</span></div></div><div className="alert-grid">{items.map((alert, idx) => <article className={`alert-card ${alert.severity?.toLowerCase() || 'low'}`} key={idx}><div className="alert-card-top"><div className="alert-icon">{alert.severity === 'HIGH' ? <ShieldAlert size={18} /> : <AlertTriangle size={18} />}</div><div><span className="severity-label">{alert.severity || 'INFO'} PRIORITY</span><h3>{alert.title}</h3></div><span className="alert-time"><Clock3 size={13} /> {new Date(alert.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></div><p>{alert.message}</p><div className="recommendation"><span>Recommended action</span><strong>{alert.action}</strong><ArrowUpRight size={15} /></div></article>)}</div></div>;
 }

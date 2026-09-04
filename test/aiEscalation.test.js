@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { aiEscalation } from '../src/matchers/aiEscalation.js';
 
-test('Layer 3 AI Escalation — Graceful Fallback on Missing API Key', async () => {
+test('Layer 3 AI Escalation — Graceful Fallback on Missing Anthropic API Key', async () => {
   const unmatchedSettlements = [{
     settlement_id: 'SETTL_999',
     payment_id: 'pay_UNKNOWN',
@@ -23,7 +23,40 @@ test('Layer 3 AI Escalation — Graceful Fallback on Missing API Key', async () 
     customer_name: 'Test Customer'
   }];
 
-  const result = await aiEscalation(unmatchedSettlements, unmatchedLedger, { apiKey: 'your_anthropic_api_key_here' });
+  const result = await aiEscalation(unmatchedSettlements, unmatchedLedger, {
+    provider: 'anthropic',
+    anthropicApiKey: 'your_anthropic_api_key_here'
+  });
+  assert.equal(result.matched.length, 0);
+  assert.equal(result.unmatchedSettlements.length, 1);
+  assert.ok(result.unmatchedSettlements[0].unresolved_reason.includes('flagged for human review'));
+});
+
+test('Layer 3 AI Escalation — Graceful Fallback on Missing Gemini API Key', async () => {
+  const unmatchedSettlements = [{
+    settlement_id: 'SETTL_997',
+    payment_id: 'pay_UNKNOWN_GEMINI',
+    utr: 'UTR99997',
+    amount: 1500.00,
+    net_amount: 1500.00,
+    fee: 0,
+    settlement_date: '2026-08-15T10:00:00Z',
+    customer_name: 'Gemini Test User'
+  }];
+
+  const unmatchedLedger = [{
+    internal_id: 'ORD_997',
+    payment_ref: 'pay_OTHER_GEMINI',
+    utr: 'UTR88887',
+    gross_amount: 1500.00,
+    order_date: '2026-08-15T10:00:00Z',
+    customer_name: 'Gemini Test User'
+  }];
+
+  const result = await aiEscalation(unmatchedSettlements, unmatchedLedger, {
+    provider: 'gemini',
+    geminiApiKey: 'your_gemini_api_key_here'
+  });
   assert.equal(result.matched.length, 0);
   assert.equal(result.unmatchedSettlements.length, 1);
   assert.ok(result.unmatchedSettlements[0].unresolved_reason.includes('flagged for human review'));

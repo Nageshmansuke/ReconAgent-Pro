@@ -1,9 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenAI } from '@google/genai';
 
 /**
  * Layer 3: Bounded AI Escalation Matcher
  * Only invoked for genuine leftovers after Layer 1 (Exact) and Layer 2 (Fuzzy).
- * Uses Claude API with strict JSON schema validation, call caps, confidence thresholds,
+ * Supports both Google Gemini API and Anthropic Claude API.
+ * Uses strict JSON schema validation, call caps, confidence thresholds,
  * and try/catch fallback to "unresolved — flagged for human review".
  */
 export async function aiEscalation(unmatchedSettlements, unmatchedLedger, options = {}) {
@@ -15,14 +17,37 @@ export async function aiEscalation(unmatchedSettlements, unmatchedLedger, option
   const remainingSettlements = [];
   const remainingLedgerMap = new Map(unmatchedLedger.map(l => [l.internal_id, l]));
 
-  // Setup Anthropic client if API key is present
-  const apiKey = options.apiKey || process.env.ANTHROPIC_API_KEY;
+  // Determine provider: 'gemini' or 'anthropic'
+  const geminiKey = options.geminiApiKey || process.env.GEMINI_API_KEY;
+  const anthropicKey = options.anthropicApiKey || process.env.ANTHROPIC_API_KEY;
+
+  let provider = options.provider || process.env.AI_PROVIDER;
+  if (!provider) {
+    if (geminiKey && geminiKey !== 'your_gemini_api_key_here') {
+      provider = 'gemini';
+    } else if (anthropicKey && anthropicKey !== 'your_anthropic_api_key_here') {
+      provider = 'anthropic';
+    } else {
+      provider = 'none';
+    }
+  }
+
+  let googleAI = null;
   let anthropic = null;
-  if (apiKey && apiKey !== 'your_anthropic_api_key_here' && !simulateFailure) {
-    try {
-      anthropic = new Anthropic({ apiKey });
-    } catch (err) {
-      console.warn('Failed to initialize Anthropic client:', err.message);
+
+  if (!simulateFailure) {
+    if (provider === 'gemini' && geminiKey && geminiKey !== 'your_gemini_api_key_here') {
+      try {
+        googleAI = new GoogleGenAI({ apiKey: geminiKey });
+      } catch (err) {
+        console.warn('Failed to initialize Google GenAI client:', err.message);
+      }
+    } else if (provider === 'anthropic' && anthropicKey && anthropicKey !== 'your_anthropic_api_key_here') {
+      try {
+        anthropic = new Anthropic({ apiKey: anthropicKey });
+      } catch (err) {
+        console.warn('Failed to initialize Anthropic client:', err.message);
+      }
     }
   }
 
@@ -46,11 +71,11 @@ export async function aiEscalation(unmatchedSettlements, unmatchedLedger, option
       continue;
     }
 
-    if (!anthropic) {
+    if (!googleAI && !anthropic) {
       // Fallback when no active API key is provided
       remainingSettlements.push({
         ...settl,
-        unresolved_reason: 'unresolved — flagged for human review (AI key not configured)'
+        unresolved_reason: `unresolved — flagged for human review (${provider} API key not configured)`
       });
       continue;
     }
@@ -85,16 +110,33 @@ Evaluate whether the settlement matches any ledger record. Reply strictly with t
 
     try {
       callsMade++;
-      const response = await anthropic.messages.create({
-        model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
-        max_tokens: 300,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
-      });
+      let responseText = '';
 
-      const responseText = response.content?.[0]?.text || '';
-      
-      // Extract JSON from response text if wrapped in markdown codeblocks
+      if (googleAI) {
+        // Call Google Gemini API
+        const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+        const response = await googleAI.models.generateContent({
+          model: modelName,
+          contents: userPrompt,
+          config: {
+            systemInstruction: systemPrompt,
+            responseMimeType: 'application/json'
+          }
+        });
+        responseText = response.text || '';
+      } else if (anthropic) {
+        // Call Anthropic Claude API
+        const modelName = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022';
+        const response = await anthropic.messages.create({
+          model: modelName,
+          max_tokens: 300,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }]
+        });
+        responseText = response.content?.[0]?.text || '';
+      }
+
+      // Extract JSON from response text
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error('AI response did not contain valid JSON block');
@@ -116,7 +158,7 @@ Evaluate whether the settlement matches any ledger record. Reply strictly with t
           ledger: matchedLedger,
           match_layer: 'ai',
           confidence: Math.round(parsed.confidence * 100) / 100,
-          reason: `AI Escalation: ${parsed.reason}`
+          reason: `AI Escalation (${provider.toUpperCase()}): ${parsed.reason}`
         });
       } else {
         remainingSettlements.push({
@@ -128,7 +170,7 @@ Evaluate whether the settlement matches any ledger record. Reply strictly with t
       }
     } catch (err) {
       // Graceful fallback on API error, parse error, or schema mismatch
-      console.warn(`AI Escalation error for settlement ${settl.settlement_id}:`, err.message);
+      console.warn(`AI Escalation error (${provider}) for settlement ${settl.settlement_id}:`, err.message);
       remainingSettlements.push({
         ...settl,
         unresolved_reason: `unresolved — flagged for human review (AI error: ${err.message})`

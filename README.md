@@ -148,7 +148,10 @@ ReconAgent is production-ready and deploys via environment variables only.
 - **Start Command:** `npm start`
 - **Environment Variables:**
   - `PORT`: (automatically injected by PaaS)
-  - `ANTHROPIC_API_KEY`: `sk-ant-api...` (optional, for Layer 3 AI escalation)
+  - `AI_PROVIDER`: `gemini` or `anthropic` (defaults to auto-detecting based on API keys)
+  - `GEMINI_API_KEY`: `AIzaSy...` (optional, Google AI Studio key for Layer 3 Gemini escalation)
+  - `ANTHROPIC_API_KEY`: `sk-ant-api...` (optional, Anthropic key for Layer 3 Claude escalation)
+
 
 ---
 

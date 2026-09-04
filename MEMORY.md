@@ -44,12 +44,13 @@ Each entry should be short and factual: what happened, what you decided, what's 
 - **Next step:** Phase 4: Layer 3 (AI Escalation matcher + failure fallback test).
 
 
-### [Timestamp] — Phase 4: AI Escalation
-- **What happened:**
-- **Decisions made:**
-- **Currently working:**
-- **Blockers/issues (this is where the deliberate failure case should be logged in detail):**
-- **Next step:**
+### [2026-09-04] — Phase 4: AI Escalation
+- **What happened:** Implemented `src/matchers/aiEscalation.js` using `@anthropic-ai/sdk` with strict JSON schema validation, call caps, confidence thresholds, and try/catch fallback to `"unresolved — flagged for human review"`.
+- **Decisions made:** Provided `simulateFailure` flag to deliberately trigger and test failure recovery. Handled missing API key gracefully without crashing.
+- **Currently working:** Unit tests in `test/aiEscalation.test.js` passing. Forced-failure path tested and verified.
+- **Blockers/issues (deliberate failure case details):** Tested forced failure case where AI response is malformed or API times out. System caught error, logged it, and correctly degraded the record to `"unresolved — flagged for human review (simulated AI timeout/parse error)"`.
+- **Next step:** Phase 5: Pipeline + Metrics (src/pipeline.js, src/metrics.js, results.json & audit_log.json).
+
 
 ### [Timestamp] — Phase 5: Pipeline + Metrics
 - **What happened:**

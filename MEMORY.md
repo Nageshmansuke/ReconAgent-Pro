@@ -60,12 +60,13 @@ Each entry should be short and factual: what happened, what you decided, what's 
 - **Next step:** Phase 6: API + Dashboard (Express API routes + vanilla HTML/CSS/JS dashboard).
 
 
-### [Timestamp] — Phase 6: API + Dashboard
-- **What happened:**
-- **Decisions made:**
-- **Currently working:**
-- **Blockers/issues:**
-- **Next step:**
+### [2026-09-04] — Phase 6: API + Dashboard
+- **What happened:** Implemented Express routes (`POST /api/generate`, `POST /api/reconcile`, `GET /api/results`) in `src/server.js` and single-page dashboard UI in `public/index.html`, `public/style.css`, and `public/app.js`.
+- **Decisions made:** Adhered strictly to `DESIGN.md` (fintech dark theme `#12100E`, gold accents, KPI cards, layer execution steps, filterable audit log, honest exceptions list, zero frontend framework build steps).
+- **Currently working:** API routes tested and functional; dashboard UI renders metrics and exceptions cleanly.
+- **Blockers/issues:** None.
+- **Next step:** Phase 7: Documentation (complete README.md).
+
 
 ### [Timestamp] — Phase 7: Documentation
 - **What happened:**

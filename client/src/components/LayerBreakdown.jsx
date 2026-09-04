@@ -8,65 +8,73 @@ export default function LayerBreakdown({ layerBreakdown }) {
   const unresolvedCount = layerBreakdown?.unresolvedSettlements || 0;
 
   return (
-    <div className="glass-panel p-6 mb-6">
-      <h2 className="text-base font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-        <span>Pipeline Layer Execution Breakdown</span>
+    <div className="recon-card mb-6">
+      <h2 className="text-sm font-bold text-[var(--text-primary)] mb-4 uppercase tracking-wider">
+        Pipeline Layer Execution Breakdown
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid-layers">
         {/* Layer 1: Exact Match */}
-        <div className="bg-[var(--bg-card)] border border-[var(--border-dim)] hover:border-emerald-500/40 rounded-xl p-4 transition-all">
-          <div className="flex justify-between items-center mb-2">
-            <span className="badge-chip badge-exact">
-              <Cpu className="w-3 h-3" /> Layer 1: Exact
-            </span>
-            <span className="text-xl font-black text-[var(--text-primary)] font-mono">{exactCount}</span>
+        <div className="p-4 rounded-xl bg-[var(--bg-input)] border border-[var(--border-dim)] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="status-pill pill-exact">
+                <Cpu className="w-3 h-3" /> Layer 1: Exact
+              </span>
+              <span className="text-lg font-bold font-mono text-[var(--text-primary)]">{exactCount}</span>
+            </div>
+            <p className="text-xs text-[var(--text-secondary)] mb-3">Deterministic Ref/UTR & Amount match ($0 AI cost)</p>
           </div>
-          <p className="text-xs text-[var(--text-secondary)] mb-3">Deterministic Ref/UTR & Amount match ($0 AI cost)</p>
-          <div className="w-full bg-[var(--bg-main)] h-1.5 rounded-full overflow-hidden">
-            <div className="bg-emerald-500 h-full" style={{ width: `${Math.min(100, exactCount * 5)}%` }}></div>
+          <div className="w-full bg-[var(--bg-main)] h-2 rounded-full overflow-hidden">
+            <div className="bg-emerald-500 h-full transition-all" style={{ width: `${Math.min(100, exactCount * 5)}%` }}></div>
           </div>
         </div>
 
         {/* Layer 2: Fuzzy Match */}
-        <div className="bg-[var(--bg-card)] border border-[var(--border-dim)] hover:border-amber-500/40 rounded-xl p-4 transition-all">
-          <div className="flex justify-between items-center mb-2">
-            <span className="badge-chip badge-fuzzy">
-              <Sparkles className="w-3 h-3" /> Layer 2: Fuzzy
-            </span>
-            <span className="text-xl font-black text-[var(--text-primary)] font-mono">{fuzzyCount}</span>
+        <div className="p-4 rounded-xl bg-[var(--bg-input)] border border-[var(--border-dim)] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="status-pill pill-fuzzy">
+                <Sparkles className="w-3 h-3" /> Layer 2: Fuzzy
+              </span>
+              <span className="text-lg font-bold font-mono text-[var(--text-primary)]">{fuzzyCount}</span>
+            </div>
+            <p className="text-xs text-[var(--text-secondary)] mb-3">String similarity + date window ($0 AI cost)</p>
           </div>
-          <p className="text-xs text-[var(--text-secondary)] mb-3">String similarity + date window ($0 AI cost)</p>
-          <div className="w-full bg-[var(--bg-main)] h-1.5 rounded-full overflow-hidden">
-            <div className="bg-amber-500 h-full" style={{ width: `${Math.min(100, fuzzyCount * 15)}%` }}></div>
+          <div className="w-full bg-[var(--bg-main)] h-2 rounded-full overflow-hidden">
+            <div className="bg-amber-500 h-full transition-all" style={{ width: `${Math.min(100, fuzzyCount * 15)}%` }}></div>
           </div>
         </div>
 
         {/* Layer 3: AI Escalation */}
-        <div className="bg-[var(--bg-card)] border border-[var(--border-dim)] hover:border-indigo-500/40 rounded-xl p-4 transition-all">
-          <div className="flex justify-between items-center mb-2">
-            <span className="badge-chip badge-ai">
-              <Brain className="w-3 h-3" /> Layer 3: AI Escalation
-            </span>
-            <span className="text-xl font-black text-[var(--text-primary)] font-mono">{aiCount}</span>
+        <div className="p-4 rounded-xl bg-[var(--bg-input)] border border-[var(--border-dim)] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="status-pill pill-ai">
+                <Brain className="w-3 h-3" /> Layer 3: AI Escalation
+              </span>
+              <span className="text-lg font-bold font-mono text-[var(--text-primary)]">{aiCount}</span>
+            </div>
+            <p className="text-xs text-[var(--text-secondary)] mb-3">Bounded Gemini/Claude AI on leftovers</p>
           </div>
-          <p className="text-xs text-[var(--text-secondary)] mb-3">Bounded Gemini/Claude AI on leftovers</p>
-          <div className="w-full bg-[var(--bg-main)] h-1.5 rounded-full overflow-hidden">
-            <div className="bg-indigo-500 h-full" style={{ width: `${Math.min(100, aiCount * 25)}%` }}></div>
+          <div className="w-full bg-[var(--bg-main)] h-2 rounded-full overflow-hidden">
+            <div className="bg-indigo-500 h-full transition-all" style={{ width: `${Math.min(100, aiCount * 25)}%` }}></div>
           </div>
         </div>
 
         {/* Exceptions Queue */}
-        <div className="bg-[var(--bg-card)] border border-[var(--border-dim)] hover:border-rose-500/40 rounded-xl p-4 transition-all">
-          <div className="flex justify-between items-center mb-2">
-            <span className="badge-chip badge-unresolved">
-              <AlertTriangle className="w-3 h-3" /> Exceptions
-            </span>
-            <span className="text-xl font-black text-[var(--text-primary)] font-mono">{unresolvedCount}</span>
+        <div className="p-4 rounded-xl bg-[var(--bg-input)] border border-[var(--border-dim)] flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="status-pill pill-unresolved">
+                <AlertTriangle className="w-3 h-3" /> Exceptions
+              </span>
+              <span className="text-lg font-bold font-mono text-[var(--text-primary)]">{unresolvedCount}</span>
+            </div>
+            <p className="text-xs text-[var(--text-secondary)] mb-3">Flagged for human review (Transparent)</p>
           </div>
-          <p className="text-xs text-[var(--text-secondary)] mb-3">Flagged for human review (Transparent)</p>
-          <div className="w-full bg-[var(--bg-main)] h-1.5 rounded-full overflow-hidden">
-            <div className="bg-rose-500 h-full" style={{ width: `${Math.min(100, unresolvedCount * 15)}%` }}></div>
+          <div className="w-full bg-[var(--bg-main)] h-2 rounded-full overflow-hidden">
+            <div className="bg-rose-500 h-full transition-all" style={{ width: `${Math.min(100, unresolvedCount * 15)}%` }}></div>
           </div>
         </div>
       </div>

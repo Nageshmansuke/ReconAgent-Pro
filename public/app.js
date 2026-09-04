@@ -1,4 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const btnOpenUpload = document.getElementById('btn-open-upload');
+  const btnCloseUpload = document.getElementById('btn-close-upload');
+  const uploadPanel = document.getElementById('upload-panel');
+
+  const fileSettlements = document.getElementById('file-settlements');
+  const fileLedger = document.getElementById('file-ledger');
+
+  const settlementFileName = document.getElementById('settlement-file-name');
+  const ledgerFileName = document.getElementById('ledger-file-name');
+
+  const btnProcessUpload = document.getElementById('btn-process-upload');
+  const btnDownloadTemplates = document.getElementById('btn-download-templates');
+
   const btnGenerate = document.getElementById('btn-generate');
   const btnReconcile = document.getElementById('btn-reconcile');
   const btnSimulateFail = document.getElementById('btn-simulate-fail');
@@ -26,6 +39,18 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentResults = null;
   let currentAuditLog = [];
 
+  let settlementsFileContent = null;
+  let ledgerFileContent = null;
+
+  // Toggle Upload Panel
+  btnOpenUpload.addEventListener('click', () => {
+    uploadPanel.classList.toggle('hidden');
+  });
+
+  btnCloseUpload.addEventListener('click', () => {
+    uploadPanel.classList.add('hidden');
+  });
+
   // Tab switching logic
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -40,7 +65,91 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load existing results on startup
   fetchResults();
 
-  // Event Listeners
+  // Handle File Selection
+  fileSettlements.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      settlementFileName.textContent = `✓ ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      settlementsFileContent = await file.text();
+      checkUploadReady();
+    }
+  });
+
+  fileLedger.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      ledgerFileName.textContent = `✓ ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      ledgerFileContent = await file.text();
+      checkUploadReady();
+    }
+  });
+
+  function checkUploadReady() {
+    btnProcessUpload.disabled = !(settlementsFileContent && ledgerFileContent);
+  }
+
+  // Handle Upload & Reconcile Real Files
+  btnProcessUpload.addEventListener('click', async () => {
+    if (!settlementsFileContent || !ledgerFileContent) return;
+
+    setLoading(btnProcessUpload, true, '🚀 Reconciling Real Files...');
+    showBanner('Parsing and normalizing real data files...', 'info');
+
+    try {
+      const isCsv = fileSettlements.files[0]?.name.endsWith('.csv') || settlementsFileContent.includes(',');
+      const res = await fetch('/api/upload-and-reconcile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          settlementsContent: settlementsFileContent,
+          ledgerContent: ledgerFileContent,
+          fileType: isCsv ? 'csv' : 'json'
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        currentResults = data.results;
+        fetchResults();
+        showBanner(`Successfully reconciled real files! ${data.message}`, 'info');
+        uploadPanel.classList.add('hidden');
+      } else {
+        showBanner(`Upload Error: ${data.error}`, 'error');
+      }
+    } catch (err) {
+      showBanner(`Error processing files: ${err.message}`, 'error');
+    } finally {
+      setLoading(btnProcessUpload, false, '🚀 Run Real-Time Reconciliation');
+    }
+  });
+
+  // Download Sample CSV Templates
+  btnDownloadTemplates.addEventListener('click', () => {
+    const sampleSettlementCSV = `settlement_id,utr,payment_id,amount,fee,net_amount,settlement_date,customer_name
+SETTL_REAL_1001,UTR987654321001,pay_REAL_101,1500,30,1470,2026-08-15T10:00:00Z,Rahul Sharma
+SETTL_REAL_1002,UTR987654321002,pay_REAL_102,2400,0,2400,2026-08-15T11:00:00Z,Priya Patel
+SETTL_REAL_1003,UTR987654321003,pay_REAL_103_XX,3200,0,3200,2026-08-15T12:00:00Z,Vikram Sethi`;
+
+    const sampleLedgerCSV = `internal_id,payment_ref,utr,gross_amount,order_date,customer_name
+ORD_REAL_5001,pay_REAL_101,UTR987654321001,1500,2026-08-15T10:00:00Z,Rahul Sharma
+ORD_REAL_5002,pay_REAL_102,UTR987654321002,2400,2026-08-15T11:00:00Z,Priya Patel
+ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S.`;
+
+    downloadFile('sample_gateway_settlements.csv', sampleSettlementCSV);
+    setTimeout(() => downloadFile('sample_internal_ledger.csv', sampleLedgerCSV), 500);
+  });
+
+  function downloadFile(filename, text) {
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  }
+
+  // Demo Actions
   btnGenerate.addEventListener('click', async () => {
     setLoading(btnGenerate, true, 'Generating...');
     showBanner('Generating synthetic dataset with realistic noise...', 'info');
@@ -48,14 +157,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/generate', { method: 'POST' });
       const data = await res.json();
       if (data.success) {
-        showBanner(`Generated dataset: ${data.summary.settlementsCount} settlements, ${data.summary.internalLedgerCount} ledger records. Now click "Run Reconciliation".`, 'info');
+        showBanner(`Generated dataset: ${data.summary.settlementsCount} settlements, ${data.summary.internalLedgerCount} ledger records. Now click "Run Pipeline".`, 'info');
       } else {
         showBanner(`Error: ${data.error}`, 'error');
       }
     } catch (err) {
       showBanner(`Network error: ${err.message}`, 'error');
     } finally {
-      setLoading(btnGenerate, false, '⚡ Generate Data');
+      setLoading(btnGenerate, false, '⚡ Demo Data');
     }
   });
 
@@ -67,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function handleReconciliation(simulateFailure = false) {
     const btn = simulateFailure ? btnSimulateFail : btnReconcile;
     const label = simulateFailure ? '⚠ Testing Fallback...' : 'Running...';
-    const origText = simulateFailure ? '⚠ Test AI Failure Fallback' : '▶ Run Reconciliation';
+    const origText = simulateFailure ? '⚠ Test AI Failure Fallback' : '▶ Run Pipeline';
 
     setLoading(btn, true, label);
     showBanner(simulateFailure ? 'Running pipeline with forced AI failure fallback simulation...' : 'Running multi-layer reconciliation pipeline...', 'info');
@@ -117,11 +226,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const m = currentResults.metrics;
 
     // KPI Cards
-    kpiMatchRate.textContent = `${m.matchRate}%`;
+    kpiMatchRate.textContent = m.matchRate !== undefined ? `${m.matchRate}%` : `${Math.round((m.totalMatched / (m.totalSettlements || 1)) * 100)}%`;
     kpiMatchedCount.textContent = `${m.totalMatched} / ${m.totalSettlements} settlements matched`;
-    kpiPrecision.textContent = m.precision;
-    kpiRecall.textContent = m.recall;
-    kpiF1.textContent = m.f1Score;
+    kpiPrecision.textContent = m.precision !== undefined ? m.precision : '--';
+    kpiRecall.textContent = m.recall !== undefined ? m.recall : '--';
+    kpiF1.textContent = m.f1Score !== undefined ? m.f1Score : '--';
 
     // Layer breakdown
     countExact.textContent = m.layerBreakdown.exact;

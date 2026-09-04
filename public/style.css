@@ -103,6 +103,16 @@ body {
   background-color: var(--accent-gold-hover);
 }
 
+.btn-primary-gold {
+  background-color: var(--accent-gold);
+  color: #12100E;
+  box-shadow: 0 0 12px rgba(217, 169, 78, 0.3);
+}
+
+.btn-primary-gold:hover {
+  background-color: var(--accent-gold-hover);
+}
+
 .btn-secondary {
   background-color: var(--surface-color);
   color: var(--text-primary);
@@ -121,6 +131,14 @@ body {
 
 .btn-danger-outline:hover {
   background-color: rgba(217, 99, 78, 0.1);
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
 }
 
 .btn:disabled {
@@ -149,7 +167,73 @@ body {
 }
 
 .hidden {
+  display: none !important;
+}
+
+/* Upload Panel */
+.upload-card {
+  border: 1px solid var(--accent-gold) !important;
+  background-color: #191612 !important;
+}
+
+.upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.upload-box {
+  background-color: var(--bg-color);
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.upload-box:hover {
+  border-color: var(--accent-gold);
+}
+
+.upload-box input[type="file"] {
   display: none;
+}
+
+.upload-label {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.upload-icon {
+  font-size: 28px;
+}
+
+.upload-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.upload-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.file-name-display {
+  margin-top: 10px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--accent-gold);
+}
+
+.upload-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
 }
 
 /* Dashboard Body */

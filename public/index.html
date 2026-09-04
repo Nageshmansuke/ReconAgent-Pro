@@ -14,12 +14,13 @@
         <div class="logo-badge">RA</div>
         <div>
           <h1>ReconAgent</h1>
-          <p class="subtitle">Track 04: Multi-Source AI Finance Reconciliation Controller</p>
+          <p class="subtitle">Track 04: Multi-Source Real-Time Reconciliation Agent</p>
         </div>
       </div>
       <div class="actions">
-        <button id="btn-generate" class="btn btn-secondary">⚡ Generate Data</button>
-        <button id="btn-reconcile" class="btn btn-primary">▶ Run Reconciliation</button>
+        <button id="btn-open-upload" class="btn btn-primary-gold">📁 Reconcile Real Files</button>
+        <button id="btn-generate" class="btn btn-secondary">⚡ Demo Data</button>
+        <button id="btn-reconcile" class="btn btn-secondary">▶ Run Pipeline</button>
         <button id="btn-simulate-fail" class="btn btn-danger-outline" title="Simulate malformed AI response or timeout to verify fallback">
           ⚠ Test AI Failure Fallback
         </button>
@@ -28,6 +29,44 @@
 
     <!-- Status Banner -->
     <div id="status-banner" class="status-banner hidden"></div>
+
+    <!-- Upload Real Files Modal Panel -->
+    <section id="upload-panel" class="panel upload-card hidden">
+      <div class="panel-header">
+        <div>
+          <h3>📁 Reconcile Your Real Business Data</h3>
+          <p class="panel-subtext">Upload your Gateway Settlement file and Internal Sales Ledger file (CSV or JSON formats supported).</p>
+        </div>
+        <button id="btn-close-upload" class="btn-icon">&times;</button>
+      </div>
+
+      <div class="upload-grid">
+        <div class="upload-box">
+          <label for="file-settlements" class="upload-label">
+            <span class="upload-icon">🏦</span>
+            <span class="upload-title">1. Gateway Settlement File</span>
+            <span class="upload-desc">Razorpay / Stripe / PayU CSV or JSON</span>
+          </label>
+          <input type="file" id="file-settlements" accept=".csv, .json, text/csv, application/json">
+          <div id="settlement-file-name" class="file-name-display">No file selected</div>
+        </div>
+
+        <div class="upload-box">
+          <label for="file-ledger" class="upload-label">
+            <span class="upload-icon">📖</span>
+            <span class="upload-title">2. Internal Sales Ledger File</span>
+            <span class="upload-desc">QuickBooks / Tally / Shopify CSV or JSON</span>
+          </label>
+          <input type="file" id="file-ledger" accept=".csv, .json, text/csv, application/json">
+          <div id="ledger-file-name" class="file-name-display">No file selected</div>
+        </div>
+      </div>
+
+      <div class="upload-actions">
+        <button id="btn-process-upload" class="btn btn-primary" disabled>🚀 Run Real-Time Reconciliation</button>
+        <button id="btn-download-templates" class="btn btn-secondary">📥 Download CSV Sample Templates</button>
+      </div>
+    </section>
 
     <!-- Main Content -->
     <main class="dashboard-body">
@@ -83,7 +122,7 @@
               <span class="badge badge-ai">Layer 3: AI Escalation</span>
               <span id="count-ai" class="step-count">0</span>
             </div>
-            <p class="step-desc">Bounded Claude LLM resolution on genuine leftovers</p>
+            <p class="step-desc">Bounded Gemini / Claude AI on genuine leftovers</p>
           </div>
 
           <div class="layer-step">
@@ -134,7 +173,7 @@
               </thead>
               <tbody id="audit-table-body">
                 <tr>
-                  <td colspan="7" class="empty-state">No reconciliation run yet. Click "Run Reconciliation" to execute.</td>
+                  <td colspan="7" class="empty-state">No reconciliation run yet. Click "Reconcile Real Files" or "Run Pipeline".</td>
                 </tr>
               </tbody>
             </table>

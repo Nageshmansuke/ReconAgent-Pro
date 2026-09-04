@@ -52,12 +52,13 @@ Each entry should be short and factual: what happened, what you decided, what's 
 - **Next step:** Phase 5: Pipeline + Metrics (src/pipeline.js, src/metrics.js, results.json & audit_log.json).
 
 
-### [Timestamp] — Phase 5: Pipeline + Metrics
-- **What happened:**
-- **Decisions made:**
-- **Currently working:**
-- **Blockers/issues:**
-- **Next step:**
+### [2026-09-04] — Phase 5: Pipeline + Metrics
+- **What happened:** Built `src/metrics.js` and `src/pipeline.js` to orchestrate L1 -> L2 -> L3 and score predictions against ground truth. Output saved to `/data/results.json` and `/data/audit_log.json`.
+- **Decisions made:** Evaluated match rate, precision (1.0), recall (0.913), F1 score (0.955), and layer breakdown.
+- **Currently working:** Real run against synthetic data yields 87.5% match rate (56 exact, 7 fuzzy, 0 AI fallback, 9 unresolved settlements, 6 unresolved ledger records).
+- **Blockers/issues:** None.
+- **Next step:** Phase 6: API + Dashboard (Express API routes + vanilla HTML/CSS/JS dashboard).
+
 
 ### [Timestamp] — Phase 6: API + Dashboard
 - **What happened:**

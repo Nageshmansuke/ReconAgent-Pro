@@ -3,14 +3,15 @@ import { GoogleGenAI } from '@google/genai';
 
 /**
  * Layer 3: Bounded AI Escalation Matcher
- * Only invoked for genuine leftovers after Layer 1 (Exact) and Layer 2 (Fuzzy).
+ * Operates strictly on genuine leftovers after Layer 1 (Exact) and Layer 2 (Fuzzy).
  * Supports both Google Gemini API and Anthropic Claude API.
  * Uses strict JSON schema validation, call caps, confidence thresholds,
  * and try/catch fallback to "unresolved — flagged for human review".
+ * Fully dynamic via environment variables or options.
  */
 export async function aiEscalation(unmatchedSettlements, unmatchedLedger, options = {}) {
-  const maxCalls = options.maxCalls || 20;
-  const confidenceThreshold = options.confidenceThreshold || 0.60;
+  const maxCalls = options.maxCalls || parseInt(process.env.MAX_AI_CALLS || '20');
+  const confidenceThreshold = options.confidenceThreshold || parseFloat(process.env.AI_CONFIDENCE_THRESHOLD || '0.60');
   const simulateFailure = options.simulateFailure || false;
 
   const matched = [];
@@ -95,7 +96,7 @@ Determine if there is a true match (considering split payments, typos, minor fee
 Return ONLY a valid JSON object matching this exact schema:
 {
   "match": true | false,
-  "matched_id": "ORD_xxxx" | null,
+  "matched_id": "<internal_id of matched ledger candidate>" | null,
   "confidence": 0.0 to 1.0,
   "reason": "Clear one-sentence explanation for the decision"
 }`;
@@ -113,7 +114,6 @@ Evaluate whether the settlement matches any ledger record. Reply strictly with t
       let responseText = '';
 
       if (googleAI) {
-        // Call Google Gemini API
         const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
         const response = await googleAI.models.generateContent({
           model: modelName,
@@ -125,7 +125,6 @@ Evaluate whether the settlement matches any ledger record. Reply strictly with t
         });
         responseText = response.text || '';
       } else if (anthropic) {
-        // Call Anthropic Claude API
         const modelName = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022';
         const response = await anthropic.messages.create({
           model: modelName,
@@ -169,7 +168,6 @@ Evaluate whether the settlement matches any ledger record. Reply strictly with t
         });
       }
     } catch (err) {
-      // Graceful fallback on API error, parse error, or schema mismatch
       console.warn(`AI Escalation error (${provider}) for settlement ${settl.settlement_id}:`, err.message);
       remainingSettlements.push({
         ...settl,

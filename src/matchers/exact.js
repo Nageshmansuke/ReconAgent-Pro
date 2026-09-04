@@ -2,9 +2,11 @@
  * Layer 1: Deterministic Exact Matcher
  * Matches gateway settlement records against internal ledger records using exact reference/UTR keys
  * and strict amount validation (gross amount match or fee-adjusted net amount match).
+ * Amount tolerance is dynamically configurable.
  */
 
-export function exactMatch(settlements, ledgerRecords) {
+export function exactMatch(settlements, ledgerRecords, options = {}) {
+  const tolerance = options.tolerance || parseFloat(process.env.EXACT_AMOUNT_TOLERANCE || '0.05');
   const matched = [];
   const unmatchedSettlements = [];
   const usedLedgerIds = new Set();
@@ -37,11 +39,11 @@ export function exactMatch(settlements, ledgerRecords) {
         const feeAdjustedGross = settl.net_amount + (settl.fee || 0);
         const amountDiffFeeAdj = Math.abs(feeAdjustedGross - c.gross_amount);
 
-        if (amountDiffGross < 0.05) {
+        if (amountDiffGross < tolerance) {
           candidate = c;
           matchReason = `Exact match on payment_id (${settl.payment_id}) and gross amount (${settl.amount}).`;
           break;
-        } else if (amountDiffNet < 0.05 || amountDiffFeeAdj < 0.05) {
+        } else if (amountDiffNet < tolerance || amountDiffFeeAdj < tolerance) {
           candidate = c;
           matchReason = `Exact match on payment_id (${settl.payment_id}) with fee deduction (net: ${settl.net_amount}, fee: ${settl.fee}, gross: ${c.gross_amount}).`;
           break;
@@ -58,11 +60,11 @@ export function exactMatch(settlements, ledgerRecords) {
         const feeAdjustedGross = settl.net_amount + (settl.fee || 0);
         const amountDiffFeeAdj = Math.abs(feeAdjustedGross - c.gross_amount);
 
-        if (amountDiffGross < 0.05) {
+        if (amountDiffGross < tolerance) {
           candidate = c;
           matchReason = `Exact match on UTR (${settl.utr}) and gross amount (${settl.amount}).`;
           break;
-        } else if (amountDiffNet < 0.05 || amountDiffFeeAdj < 0.05) {
+        } else if (amountDiffNet < tolerance || amountDiffFeeAdj < tolerance) {
           candidate = c;
           matchReason = `Exact match on UTR (${settl.utr}) with fee deduction (net: ${settl.net_amount}, gross: ${c.gross_amount}).`;
           break;

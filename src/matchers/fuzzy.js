@@ -4,10 +4,13 @@ import stringSimilarity from 'string-similarity';
  * Layer 2: Deterministic Fuzzy Matcher
  * Operates strictly on leftovers from Layer 1.
  * Uses string-similarity (Levenshtein/Dice coefficient) on names and reference strings,
- * combined with date windows (+/- 5 days) and amount tolerance checks.
+ * combined with configurable date windows (+/- 7 days default) and amount tolerance checks.
  */
 export function fuzzyMatch(unmatchedSettlements, unmatchedLedger, options = {}) {
-  const threshold = options.threshold || 0.75;
+  const threshold = options.threshold || parseFloat(process.env.FUZZY_CONFIDENCE_THRESHOLD || '0.75');
+  const maxDayWindow = options.maxDayWindow || parseFloat(process.env.FUZZY_DATE_WINDOW_DAYS || '7');
+  const tolerance = options.tolerance || parseFloat(process.env.EXACT_AMOUNT_TOLERANCE || '0.05');
+
   const matched = [];
   const remainingSettlements = [];
   const usedLedgerIds = new Set();
@@ -25,8 +28,8 @@ export function fuzzyMatch(unmatchedSettlements, unmatchedLedger, options = {}) 
       const ledgerDate = new Date(ledger.order_date);
       const dayDiff = Math.abs(settlDate - ledgerDate) / (1000 * 60 * 60 * 24);
 
-      // Require date window within 7 days
-      if (dayDiff > 7) continue;
+      // Require date window within maxDayWindow
+      if (dayDiff > maxDayWindow) continue;
 
       // Amount checks
       const amountDiffGross = Math.abs(settl.amount - ledger.gross_amount);
@@ -34,7 +37,7 @@ export function fuzzyMatch(unmatchedSettlements, unmatchedLedger, options = {}) 
       const feeAdjustedGross = settl.net_amount + (settl.fee || 0);
       const amountDiffFeeAdj = Math.abs(feeAdjustedGross - ledger.gross_amount);
 
-      const exactAmountMatch = amountDiffGross < 0.05 || amountDiffNet < 0.05 || amountDiffFeeAdj < 0.05;
+      const exactAmountMatch = amountDiffGross < tolerance || amountDiffNet < tolerance || amountDiffFeeAdj < tolerance;
 
       // String similarity metrics
       const nameSim = settl.customer_name && ledger.customer_name

@@ -1,14 +1,15 @@
 /**
- * Flexible CSV / Data Normalizer for ReconAgent
- * Converts uploaded CSV text or JSON objects into standard internal schemas
- * for Gateway Settlements and Internal Ledger records.
+ * Fully Dynamic Real-Time Data Parser & Normalizer for ReconAgent
+ * Accepts any real-world CSV or JSON export from payment gateways
+ * (Razorpay, Stripe, PayU, Paytm, Banks) or merchant ledgers (QuickBooks, Tally, Shopify, ERPs).
+ * No hardcoded field assumptions — uses dynamic pattern matching across all column headers.
  */
 
 export function parseCSV(csvText) {
   const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
   if (lines.length === 0) return [];
 
-  const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase());
+  const headers = parseCSVLine(lines[0]).map(h => h.trim());
   const rows = [];
 
   for (let i = 1; i < lines.length; i++) {
@@ -45,60 +46,83 @@ function parseCSVLine(line) {
   return result;
 }
 
+// Dynamic field value extractor by matching key patterns
+function findValue(obj, patterns, defaultValue = '') {
+  const keys = Object.keys(obj);
+  for (const pattern of patterns) {
+    const matchedKey = keys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '').includes(pattern));
+    if (matchedKey && obj[matchedKey] !== undefined && obj[matchedKey] !== '') {
+      return obj[matchedKey];
+    }
+  }
+  return defaultValue;
+}
+
 export function normalizeSettlementData(rawItems) {
   return rawItems.map((item, idx) => {
-    // Map settlement_id
-    const settlementId = item.settlement_id || item['settlement id'] || item.settlement_ref || item.id || `SETTL_REAL_${1000 + idx}`;
-    
-    // Map UTR
-    const utr = item.utr || item.utr_number || item['utr number'] || item.bank_ref || item.rrn || '';
-    
-    // Map payment_id
-    const paymentId = item.payment_id || item['payment id'] || item.razorpay_payment_id || item.transaction_id || item.tx_id || '';
-    
-    // Map amounts
-    const rawAmount = parseFloat(item.amount || item.gross_amount || item['amount'] || 0);
-    const rawFee = parseFloat(item.fee || item.fees || item.commission || 0);
-    const rawNet = parseFloat(item.net_amount || item.net || item.payout_amount || (rawAmount - rawFee));
-    
-    // Map date
-    const dateStr = item.settlement_date || item.date || item.created_at || item.settled_at || new Date().toISOString();
-    
-    // Map customer name
-    const customerName = item.customer_name || item.customer || item.name || item.payer_name || 'Customer';
+    // Dynamic Settlement ID extraction
+    const settlementId = findValue(item, ['settlementid', 'settlementref', 'payoutid', 'id'], `SETTL_${1000 + idx}`);
+
+    // Dynamic UTR / Bank Reference extraction
+    const utr = findValue(item, ['utr', 'bankref', 'rrn', 'banktransactionid', 'reference']);
+
+    // Dynamic Payment ID / Transaction Ref extraction
+    const paymentId = findValue(item, ['paymentid', 'razorpaypaymentid', 'transactionid', 'txid', 'paymentref', 'ref']);
+
+    // Dynamic Amounts
+    const amountVal = parseFloat(findValue(item, ['amount', 'grossamount', 'total', 'credit'], 0));
+    const feeVal = parseFloat(findValue(item, ['fee', 'commission', 'charges', 'tax'], 0));
+    const netVal = parseFloat(findValue(item, ['netamount', 'net', 'payoutamount'], amountVal - feeVal));
+
+    // Dynamic Date
+    const dateVal = findValue(item, ['settlementdate', 'date', 'createdat', 'timestamp', 'settledat'], new Date().toISOString());
+
+    // Dynamic Customer Name
+    const customerName = findValue(item, ['customername', 'customer', 'payer', 'name', 'entity'], 'Customer');
 
     return {
       settlement_id: String(settlementId),
       utr: String(utr),
       payment_id: String(paymentId),
-      amount: isNaN(rawAmount) ? 0 : rawAmount,
-      fee: isNaN(rawFee) ? 0 : rawFee,
-      net_amount: isNaN(rawNet) ? rawAmount : rawNet,
-      settlement_date: dateStr,
+      amount: isNaN(amountVal) ? 0 : amountVal,
+      fee: isNaN(feeVal) ? 0 : feeVal,
+      net_amount: isNaN(netVal) ? amountVal : netVal,
+      settlement_date: String(dateVal),
       customer_name: String(customerName),
-      status: item.status || 'settled'
+      status: String(findValue(item, ['status', 'state'], 'settled'))
     };
   });
 }
 
 export function normalizeLedgerData(rawItems) {
   return rawItems.map((item, idx) => {
-    const internalId = item.internal_id || item.order_id || item['order id'] || item.invoice_id || item.id || `ORD_REAL_${5000 + idx}`;
-    const paymentRef = item.payment_ref || item.payment_id || item['payment ref'] || item.ref || item.transaction_id || '';
-    const utr = item.utr || item.utr_number || item['utr number'] || '';
-    const grossAmount = parseFloat(item.gross_amount || item.amount || item['amount'] || item.total_amount || 0);
-    const dateStr = item.order_date || item.date || item.created_at || new Date().toISOString();
-    const customerName = item.customer_name || item.customer || item.buyer || item.name || 'Customer';
+    // Dynamic Internal / Order ID extraction
+    const internalId = findValue(item, ['internalid', 'orderid', 'invoiceid', 'orderno', 'invoiceno', 'id'], `ORD_${5000 + idx}`);
+
+    // Dynamic Payment Reference extraction
+    const paymentRef = findValue(item, ['paymentref', 'paymentid', 'transactionid', 'refno', 'ref']);
+
+    // Dynamic UTR extraction
+    const utr = findValue(item, ['utr', 'bankref', 'rrn']);
+
+    // Dynamic Gross Amount extraction
+    const grossAmountVal = parseFloat(findValue(item, ['grossamount', 'amount', 'totalamount', 'total', 'invoiceamount'], 0));
+
+    // Dynamic Date
+    const dateVal = findValue(item, ['orderdate', 'date', 'invoicedate', 'createdat', 'timestamp'], new Date().toISOString());
+
+    // Dynamic Customer Name
+    const customerName = findValue(item, ['customername', 'customer', 'buyer', 'client', 'name'], 'Customer');
 
     return {
       internal_id: String(internalId),
-      order_id: item.order_id || `order_${internalId}`,
+      order_id: findValue(item, ['orderid', 'orderno'], `order_${internalId}`),
       payment_ref: String(paymentRef),
       utr: String(utr),
-      gross_amount: isNaN(grossAmount) ? 0 : grossAmount,
-      order_date: dateStr,
+      gross_amount: isNaN(grossAmountVal) ? 0 : grossAmountVal,
+      order_date: String(dateVal),
       customer_name: String(customerName),
-      status: item.status || 'captured'
+      status: String(findValue(item, ['status', 'state'], 'captured'))
     };
   });
 }

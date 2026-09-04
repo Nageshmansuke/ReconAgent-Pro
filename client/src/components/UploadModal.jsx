@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UploadCloud, X, FileText, Download, Play, CheckCircle2 } from 'lucide-react';
+import { X } from 'lucide-react';
 
 export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   const [settlementFile, setSettlementFile] = useState(null);
@@ -87,38 +87,36 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-      <div className="glass-panel w-full max-w-2xl p-6 bg-[var(--bg-card)] border-[var(--border-bright)] shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="w-full max-w-xl p-6 bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] rounded-lg shadow-2xl relative">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1 rounded-lg transition-all"
+          className="absolute top-4 right-4 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-            <UploadCloud className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-[var(--text-primary)]">📁 Reconcile Your Real Business Data</h3>
-            <p className="text-xs text-[var(--text-secondary)]">Upload CSV or JSON settlement & sales ledger exports from Razorpay, Stripe, QuickBooks, Tally, or ERPs.</p>
-          </div>
+        <div className="mb-6">
+          <h3 className="text-base font-semibold text-[var(--text-primary)]">
+            Reconcile Operational Data Files
+          </h3>
+          <p className="text-xs text-[var(--text-secondary)] mt-1">
+            Upload CSV or JSON files for gateway settlement statements and sales ledger exports.
+          </p>
         </div>
 
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+          <div className="mb-4 p-3 rounded bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
             {errorMsg}
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {/* Settlement File Dropzone */}
-          <div className="bg-[var(--bg-main)] border-2 border-dashed border-[var(--border-dim)] hover:border-amber-500 rounded-xl p-5 text-center transition-all">
-            <label className="cursor-pointer flex flex-col items-center gap-2">
-              <FileText className="w-8 h-8 text-amber-500" />
-              <span className="text-sm font-semibold text-[var(--text-primary)]">1. Gateway Settlement File</span>
-              <span className="text-xs text-[var(--text-secondary)]">Razorpay / Stripe CSV or JSON</span>
+          <div className="bg-[var(--bg-surface)] border border-dashed border-[var(--border-subtle)] hover:border-[var(--border-hover)] rounded-lg p-4 text-center">
+            <label className="cursor-pointer flex flex-col items-center gap-1.5">
+              <span className="text-xs font-semibold text-[var(--text-primary)]">1. Gateway Settlement File</span>
+              <span className="text-[11px] text-[var(--text-tertiary)]">Razorpay / Stripe CSV or JSON</span>
               <input
                 type="file"
                 accept=".csv, .json, text/csv, application/json"
@@ -127,19 +125,17 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
               />
             </label>
             {settlementFile && (
-              <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-500 text-xs font-mono">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                {settlementFile.name}
+              <div className="mt-2 text-xs font-mono text-[var(--color-success)] truncate">
+                ✓ {settlementFile.name}
               </div>
             )}
           </div>
 
           {/* Sales Ledger Dropzone */}
-          <div className="bg-[var(--bg-main)] border-2 border-dashed border-[var(--border-dim)] hover:border-cyan-500 rounded-xl p-5 text-center transition-all">
-            <label className="cursor-pointer flex flex-col items-center gap-2">
-              <FileText className="w-8 h-8 text-cyan-500" />
-              <span className="text-sm font-semibold text-[var(--text-primary)]">2. Sales Ledger File</span>
-              <span className="text-xs text-[var(--text-secondary)]">Tally / QuickBooks CSV or JSON</span>
+          <div className="bg-[var(--bg-surface)] border border-dashed border-[var(--border-subtle)] hover:border-[var(--border-hover)] rounded-lg p-4 text-center">
+            <label className="cursor-pointer flex flex-col items-center gap-1.5">
+              <span className="text-xs font-semibold text-[var(--text-primary)]">2. Sales Ledger File</span>
+              <span className="text-[11px] text-[var(--text-tertiary)]">Tally / QuickBooks CSV or JSON</span>
               <input
                 type="file"
                 accept=".csv, .json, text/csv, application/json"
@@ -148,31 +144,28 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
               />
             </label>
             {ledgerFile && (
-              <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-500 text-xs font-mono">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                {ledgerFile.name}
+              <div className="mt-2 text-xs font-mono text-[var(--color-success)] truncate">
+                ✓ {ledgerFile.name}
               </div>
             )}
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-[var(--border-dim)]">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-[var(--border-subtle)]">
           <button
             onClick={downloadSampleTemplates}
             type="button"
-            className="btn btn-outline text-xs text-[var(--text-secondary)]"
+            className="btn-ghost text-xs w-full sm:w-auto"
           >
-            <Download className="w-3.5 h-3.5" />
-            📥 Download Sample CSV Templates
+            Download Sample CSVs
           </button>
 
           <button
             onClick={handleSubmit}
             disabled={!settlementContent || !ledgerContent || isProcessing}
-            className="btn btn-emerald w-full sm:w-auto"
+            className="btn-primary-accent text-xs w-full sm:w-auto"
           >
-            <Play className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`} />
-            {isProcessing ? 'Processing Real Data...' : '🚀 Run Real-Time Reconciliation'}
+            {isProcessing ? 'Processing Data...' : 'Run Real-Time Reconciliation'}
           </button>
         </div>
       </div>

@@ -9,7 +9,6 @@ import ExceptionsTab from './components/ExceptionsTab.jsx';
 import SecurityRadarTab from './components/SecurityRadarTab.jsx';
 import AskReconCopilot from './components/AskReconCopilot.jsx';
 import AuditCertificateModal from './components/AuditCertificateModal.jsx';
-import { Bell, FileText, AlertTriangle, ShieldAlert, Award } from 'lucide-react';
 
 export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('reconagent_theme') || 'dark');
@@ -61,14 +60,14 @@ export default function App() {
 
   const handleGenerateDemo = async () => {
     setLoadingAction('generate');
-    setStatusMessage({ type: 'info', text: 'Generating synthetic dataset with realistic noise...' });
+    setStatusMessage({ type: 'info', text: 'Generating synthetic dataset...' });
     try {
       const res = await fetch('/api/generate', { method: 'POST' });
       const data = await res.json();
       if (data.success) {
         setStatusMessage({
           type: 'info',
-          text: `Generated synthetic dataset: ${data.summary.settlementsCount} settlements, ${data.summary.internalLedgerCount} ledger orders. Click "Run Pipeline" to process.`
+          text: `Dataset generated (${data.summary.settlementsCount} settlements, ${data.summary.internalLedgerCount} ledger entries). Click "Run Pipeline".`
         });
       } else {
         setStatusMessage({ type: 'error', text: `Error: ${data.error}` });
@@ -85,8 +84,8 @@ export default function App() {
     setStatusMessage({
       type: 'info',
       text: simulateFailure
-        ? 'Running pipeline with forced AI failure fallback simulation...'
-        : 'Running multi-layer reconciliation pipeline...'
+        ? 'Executing pipeline with forced AI failure fallback...'
+        : 'Executing multi-layer reconciliation pipeline...'
     });
 
     try {
@@ -105,12 +104,12 @@ export default function App() {
         if (simulateFailure) {
           setStatusMessage({
             type: 'info',
-            text: 'Failure recovery demonstrated! AI errors caught cleanly and degraded to "unresolved — flagged for human review" without crashing.'
+            text: 'AI failure recovered cleanly to human review queue without pipeline interruption.'
           });
         } else {
           setStatusMessage({
             type: 'info',
-            text: `Reconciliation complete! Match rate: ${data.results.metrics.matchRate}%`
+            text: `Pipeline execution complete. Match rate: ${data.results.metrics.matchRate}% (Precision: ${data.results.metrics.precision}, Recall: ${data.results.metrics.recall})`
           });
         }
       } else {
@@ -129,14 +128,14 @@ export default function App() {
     fetchResults();
     setStatusMessage({
       type: 'info',
-      text: `Successfully reconciled real files! Processed ${newResults.metrics.totalSettlements} settlement records.`
+      text: `Reconciled ${newResults.metrics.totalSettlements} operational settlement records successfully.`
     });
   };
 
   const unresolvedCount = results?.exceptions?.unresolvedSettlements?.length || 0;
 
   return (
-    <div className="app-container">
+    <div className="terminal-layout">
       <Header
         onOpenUpload={() => setIsUploadOpen(true)}
         onGenerateDemo={handleGenerateDemo}
@@ -148,74 +147,68 @@ export default function App() {
       />
 
       {statusMessage && (
-        <div className={`p-4 rounded-xl mb-6 font-medium text-xs sm:text-sm border flex justify-between items-center ${
+        <div className={`px-4 py-2.5 rounded text-xs border flex items-center justify-between transition-opacity ${
           statusMessage.type === 'error'
-            ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
-            : 'bg-amber-500/10 border-amber-500/30 text-amber-500'
+            ? 'bg-[var(--bg-surface-elevated)] border-[var(--color-danger)] text-[var(--color-danger)]'
+            : 'bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-secondary)]'
         }`}>
           <span>{statusMessage.text}</span>
-          <button onClick={() => setStatusMessage(null)} className="text-sm opacity-60 hover:opacity-100 font-bold ml-2">&times;</button>
+          <button onClick={() => setStatusMessage(null)} className="text-xs text-[var(--text-tertiary)] hover:text-[var(--text-primary)] font-mono ml-4">&times;</button>
         </div>
       )}
 
-      <main className="flex-1">
+      <main className="flex flex-col gap-8">
         <KpiGrid metrics={results?.metrics} />
         <LayerBreakdown layerBreakdown={results?.metrics?.layerBreakdown} />
-
-        {/* Feature 4: Natural Language Ask Recon Finance Copilot */}
         <AskReconCopilot />
 
-        {/* Tab Controls & Feature 5 Certificate Button */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-6 border-b border-[var(--border-dim)] pb-4">
-          <div className="flex flex-wrap items-center gap-2">
+        {/* Quiet Underline Tabs Navigation Bar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)]">
+          <div className="terminal-tabs-bar">
             <button
               onClick={() => setActiveTab('alerts')}
-              className={`tab-button ${activeTab === 'alerts' ? 'active' : ''}`}
+              className={`tab-item ${activeTab === 'alerts' ? 'active' : ''}`}
             >
-              <Bell className="w-4 h-4 text-amber-500" />
-              <span>Alerts Center ({alerts.length})</span>
+              Alerts <span className="font-mono-numbers text-xs font-normal">({alerts.length})</span>
             </button>
 
             <button
               onClick={() => setActiveTab('security')}
-              className={`tab-button ${activeTab === 'security' ? 'active' : ''}`}
+              className={`tab-item ${activeTab === 'security' ? 'active' : ''}`}
             >
-              <ShieldAlert className="w-4 h-4 text-rose-500" />
-              <span>Security Radar ({securityAnomalies.length})</span>
+              Security Radar <span className="font-mono-numbers text-xs font-normal">({securityAnomalies.length})</span>
             </button>
 
             <button
               onClick={() => setActiveTab('audit')}
-              className={`tab-button ${activeTab === 'audit' ? 'active' : ''}`}
+              className={`tab-item ${activeTab === 'audit' ? 'active' : ''}`}
             >
-              <FileText className="w-4 h-4 text-cyan-500" />
-              <span>Audit Trail ({auditLogs.length})</span>
+              Audit Trail <span className="font-mono-numbers text-xs font-normal">({auditLogs.length})</span>
             </button>
 
             <button
               onClick={() => setActiveTab('exceptions')}
-              className={`tab-button ${activeTab === 'exceptions' ? 'active' : ''}`}
+              className={`tab-item ${activeTab === 'exceptions' ? 'active' : ''}`}
             >
-              <AlertTriangle className="w-4 h-4 text-rose-400" />
-              <span>Exceptions ({unresolvedCount})</span>
+              Exceptions <span className="font-mono-numbers text-xs font-normal">({unresolvedCount})</span>
             </button>
           </div>
 
-          {/* Feature 5: Auditor & CA Sign-Off Certificate Button */}
           <button
             onClick={() => setIsCertOpen(true)}
-            className="btn-action btn-indigo-gradient shrink-0"
+            className="btn-ghost text-xs self-end sm:self-auto mb-2 sm:mb-0"
           >
-            <Award className="w-4 h-4 text-amber-400" />
-            <span>📜 CA Audit Certificate</span>
+            Audit Certificate
           </button>
         </div>
 
-        {/* Tab Content */}
-        {activeTab === 'alerts' && <AlertsTab alerts={alerts} />}
-        {activeTab === 'security' && <SecurityRadarTab securityAnomalies={securityAnomalies} />}
-        {activeTab === 'audit' && <AuditTable auditLogs={auditLogs} />}
-        {activeTab === 'exceptions' && <ExceptionsTab exceptions={results?.exceptions} />}
+        {/* Active Tab Panel */}
+        <div>
+          {activeTab === 'alerts' && <AlertsTab alerts={alerts} />}
+          {activeTab === 'security' && <SecurityRadarTab securityAnomalies={securityAnomalies} />}
+          {activeTab === 'audit' && <AuditTable auditLogs={auditLogs} />}
+          {activeTab === 'exceptions' && <ExceptionsTab exceptions={results?.exceptions} />}
+        </div>
       </main>
 
       <UploadModal
@@ -230,8 +223,8 @@ export default function App() {
         results={results}
       />
 
-      <footer className="mt-12 pt-6 border-t border-[var(--border-dim)] text-center text-xs text-[var(--text-tertiary)]">
-        <p>ReconAgent Pro — Multi-Source Real-Time AI Finance Controller | Built for Razorpay AI Buildathon 2026</p>
+      <footer className="pt-6 border-t border-[var(--border-subtle)] text-center text-xs text-[var(--text-tertiary)]">
+        ReconAgent Pro — Multi-Source AI Finance Reconciliation Controller | Razorpay Buildathon 2026
       </footer>
     </div>
   );

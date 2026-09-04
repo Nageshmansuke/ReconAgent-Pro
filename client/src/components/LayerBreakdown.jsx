@@ -1,5 +1,4 @@
 import React from 'react';
-import { Cpu, Sparkles, Brain, AlertTriangle } from 'lucide-react';
 
 export default function LayerBreakdown({ layerBreakdown }) {
   const exactCount = layerBreakdown?.exact || 0;
@@ -8,74 +7,48 @@ export default function LayerBreakdown({ layerBreakdown }) {
   const unresolvedCount = layerBreakdown?.unresolvedSettlements || 0;
 
   return (
-    <div className="recon-card mb-6">
-      <h2 className="text-sm font-bold text-[var(--text-primary)] mb-4 uppercase tracking-wider">
-        Pipeline Layer Execution Breakdown
-      </h2>
+    <div className="flex flex-col gap-3">
+      <div className="text-xs font-medium uppercase tracking-wider text-[var(--text-secondary)]">
+        Pipeline Layer Execution
+      </div>
 
-      <div className="grid-layers">
-        {/* Layer 1: Exact Match */}
-        <div className="p-4 rounded-xl bg-[var(--bg-input)] border border-[var(--border-dim)] flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="status-pill pill-exact">
-                <Cpu className="w-3 h-3" /> Layer 1: Exact
-              </span>
-              <span className="text-lg font-bold font-mono text-[var(--text-primary)]">{exactCount}</span>
-            </div>
-            <p className="text-xs text-[var(--text-secondary)] mb-3">Deterministic Ref/UTR & Amount match ($0 AI cost)</p>
+      <div className="stepped-funnel">
+        {/* Layer 1: Exact */}
+        <div className={`funnel-step ${exactCount > 0 ? 'resolved-active' : ''}`}>
+          <div className="flex items-baseline justify-between">
+            <span className="text-xs text-[var(--text-secondary)]">Layer 1: Exact Match</span>
+            <span className="font-mono-numbers text-base font-semibold text-[var(--text-primary)]">{exactCount}</span>
           </div>
-          <div className="w-full bg-[var(--bg-main)] h-2 rounded-full overflow-hidden">
-            <div className="bg-emerald-500 h-full transition-all" style={{ width: `${Math.min(100, exactCount * 5)}%` }}></div>
-          </div>
+          <span className="text-[11px] text-[var(--text-tertiary)]">Deterministic Ref/UTR ($0 AI cost)</span>
         </div>
 
-        {/* Layer 2: Fuzzy Match */}
-        <div className="p-4 rounded-xl bg-[var(--bg-input)] border border-[var(--border-dim)] flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="status-pill pill-fuzzy">
-                <Sparkles className="w-3 h-3" /> Layer 2: Fuzzy
-              </span>
-              <span className="text-lg font-bold font-mono text-[var(--text-primary)]">{fuzzyCount}</span>
-            </div>
-            <p className="text-xs text-[var(--text-secondary)] mb-3">String similarity + date window ($0 AI cost)</p>
+        {/* Layer 2: Fuzzy */}
+        <div className={`funnel-step ${fuzzyCount > 0 ? 'resolved-active' : ''}`}>
+          <div className="flex items-baseline justify-between">
+            <span className="text-xs text-[var(--text-secondary)]">Layer 2: Fuzzy Match</span>
+            <span className="font-mono-numbers text-base font-semibold text-[var(--text-primary)]">{fuzzyCount}</span>
           </div>
-          <div className="w-full bg-[var(--bg-main)] h-2 rounded-full overflow-hidden">
-            <div className="bg-amber-500 h-full transition-all" style={{ width: `${Math.min(100, fuzzyCount * 15)}%` }}></div>
-          </div>
+          <span className="text-[11px] text-[var(--text-tertiary)]">String similarity + date window</span>
         </div>
 
         {/* Layer 3: AI Escalation */}
-        <div className="p-4 rounded-xl bg-[var(--bg-input)] border border-[var(--border-dim)] flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="status-pill pill-ai">
-                <Brain className="w-3 h-3" /> Layer 3: AI Escalation
-              </span>
-              <span className="text-lg font-bold font-mono text-[var(--text-primary)]">{aiCount}</span>
-            </div>
-            <p className="text-xs text-[var(--text-secondary)] mb-3">Bounded Gemini/Claude AI on leftovers</p>
+        <div className={`funnel-step ${aiCount > 0 ? 'resolved-active' : ''}`}>
+          <div className="flex items-baseline justify-between">
+            <span className="text-xs text-[var(--text-secondary)]">Layer 3: AI Escalation</span>
+            <span className="font-mono-numbers text-base font-semibold text-[var(--text-primary)]">{aiCount}</span>
           </div>
-          <div className="w-full bg-[var(--bg-main)] h-2 rounded-full overflow-hidden">
-            <div className="bg-indigo-500 h-full transition-all" style={{ width: `${Math.min(100, aiCount * 25)}%` }}></div>
-          </div>
+          <span className="text-[11px] text-[var(--text-tertiary)]">Bounded Gemini/Claude LLM</span>
         </div>
 
-        {/* Exceptions Queue */}
-        <div className="p-4 rounded-xl bg-[var(--bg-input)] border border-[var(--border-dim)] flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="status-pill pill-unresolved">
-                <AlertTriangle className="w-3 h-3" /> Exceptions
-              </span>
-              <span className="text-lg font-bold font-mono text-[var(--text-primary)]">{unresolvedCount}</span>
-            </div>
-            <p className="text-xs text-[var(--text-secondary)] mb-3">Flagged for human review (Transparent)</p>
+        {/* Exceptions */}
+        <div className={`funnel-step ${unresolvedCount > 0 ? 'border-b-2 border-b-[var(--color-danger)]' : ''}`}>
+          <div className="flex items-baseline justify-between">
+            <span className="text-xs text-[var(--text-secondary)]">Exceptions Queue</span>
+            <span className={`font-mono-numbers text-base font-semibold ${unresolvedCount > 0 ? 'text-[var(--color-danger)]' : 'text-[var(--text-primary)]'}`}>
+              {unresolvedCount}
+            </span>
           </div>
-          <div className="w-full bg-[var(--bg-main)] h-2 rounded-full overflow-hidden">
-            <div className="bg-rose-500 h-full transition-all" style={{ width: `${Math.min(100, unresolvedCount * 15)}%` }}></div>
-          </div>
+          <span className="text-[11px] text-[var(--text-tertiary)]">Flagged for human review</span>
         </div>
       </div>
     </div>

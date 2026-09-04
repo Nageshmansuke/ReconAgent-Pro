@@ -370,6 +370,61 @@ body {
   border: 1px solid var(--danger-color);
 }
 
+/* Alerts System Grid */
+.alerts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.alert-card {
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--accent-gold);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.alert-card.critical {
+  border-left-color: var(--danger-color);
+  background-color: rgba(217, 99, 78, 0.05);
+}
+
+.alert-card.warning {
+  border-left-color: var(--warning-color);
+  background-color: rgba(224, 166, 58, 0.05);
+}
+
+.alert-card.info {
+  border-left-color: var(--accent-gold);
+}
+
+.alert-card.success {
+  border-left-color: var(--success-color);
+}
+
+.alert-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.alert-card-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.alert-card-time {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.alert-card-msg {
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
 /* Tabs */
 .tab-controls {
   display: flex;

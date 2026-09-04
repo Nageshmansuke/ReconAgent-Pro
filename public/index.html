@@ -137,12 +137,28 @@
 
       <!-- Section Tabs -->
       <div class="tab-controls">
-        <button class="tab-btn active" data-tab="audit-tab">Audit Log (<span id="audit-total-count">0</span>)</button>
+        <button class="tab-btn active" data-tab="alerts-tab">🔔 Alerts & Risk Center (<span id="alerts-total-count">0</span>)</button>
+        <button class="tab-btn" data-tab="audit-tab">Audit Log (<span id="audit-total-count">0</span>)</button>
         <button class="tab-btn" data-tab="exceptions-tab">Honest Exceptions (<span id="exceptions-total-count">0</span>)</button>
       </div>
 
+      <!-- Alerts & Notifications Tab -->
+      <section id="alerts-tab" class="tab-content active">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>🔔 Financial Risk & Anomaly Alerts</h3>
+              <p class="panel-subtext">Real-time alerts triggered on high-value discrepancies, gateway fee anomalies, and duplicate pings.</p>
+            </div>
+          </div>
+          <div id="alerts-container" class="alerts-grid">
+            <div class="empty-state">No active alerts generated yet. Run reconciliation to analyze risk.</div>
+          </div>
+        </div>
+      </section>
+
       <!-- Audit Log Tab -->
-      <section id="audit-tab" class="tab-content active">
+      <section id="audit-tab" class="tab-content">
         <div class="panel">
           <div class="panel-header">
             <h3>Per-Record Reconciliation Trail</h3>

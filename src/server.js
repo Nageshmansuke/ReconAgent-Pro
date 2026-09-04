@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { generateSyntheticData } from './generator.js';
 import { runPipeline } from './pipeline.js';
 import { parseCSV, normalizeSettlementData, normalizeLedgerData } from './parsers/csvParser.js';
+import { generateAlerts } from './notifications/alertEngine.js';
 
 dotenv.config();
 
@@ -16,14 +17,13 @@ const DATA_DIR = path.join(__dirname, '../data');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Increase payload limit for uploading real settlement/ledger files
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', service: 'ReconAgent', version: '1.1.0' });
+  res.json({ status: 'ok', service: 'ReconAgent', version: '1.2.0' });
 });
 
 // Generate synthetic datasets
@@ -41,7 +41,7 @@ app.post('/api/generate', (req, res) => {
   }
 });
 
-// Upload Real Data Files & Reconcile (CSV or JSON)
+// Upload Real Data Files & Reconcile
 app.post('/api/upload-and-reconcile', async (req, res) => {
   try {
     const { settlementsContent, ledgerContent, fileType, simulateFailure } = req.body;
@@ -71,20 +71,23 @@ app.post('/api/upload-and-reconcile', async (req, res) => {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
 
-    // Save normalized user files to data directory
     fs.writeFileSync(path.join(DATA_DIR, 'gateway_settlements.json'), JSON.stringify(settlementsNormalized, null, 2));
     fs.writeFileSync(path.join(DATA_DIR, 'internal_ledger.json'), JSON.stringify(ledgerNormalized, null, 2));
-
-    // Clear ground truth for custom real user files so metrics evaluate match count
     fs.writeFileSync(path.join(DATA_DIR, 'ground_truth.json'), JSON.stringify([], null, 2));
 
-    // Execute pipeline
     const results = await runPipeline({ simulateFailure: simulateFailure === true });
+
+    // Generate financial risk alerts
+    const auditPath = path.join(DATA_DIR, 'audit_log.json');
+    const auditLog = fs.existsSync(auditPath) ? JSON.parse(fs.readFileSync(auditPath, 'utf8')) : [];
+    const alerts = generateAlerts(results, auditLog);
+    fs.writeFileSync(path.join(DATA_DIR, 'alerts.json'), JSON.stringify(alerts, null, 2));
 
     res.json({
       success: true,
       message: `Reconciled ${settlementsNormalized.length} settlements against ${ledgerNormalized.length} ledger orders successfully.`,
-      results
+      results,
+      alerts
     });
   } catch (err) {
     console.error('Error processing real data files:', err);
@@ -92,16 +95,38 @@ app.post('/api/upload-and-reconcile', async (req, res) => {
   }
 });
 
-// Run reconciliation pipeline on existing data
+// Run reconciliation pipeline
 app.post('/api/reconcile', async (req, res) => {
   try {
     const simulateFailure = req.body?.simulateFailure === true;
     const results = await runPipeline({ simulateFailure });
+
+    // Generate financial risk alerts
+    const auditPath = path.join(DATA_DIR, 'audit_log.json');
+    const auditLog = fs.existsSync(auditPath) ? JSON.parse(fs.readFileSync(auditPath, 'utf8')) : [];
+    const alerts = generateAlerts(results, auditLog);
+    fs.writeFileSync(path.join(DATA_DIR, 'alerts.json'), JSON.stringify(alerts, null, 2));
+
     res.json({
       success: true,
       message: 'Reconciliation pipeline completed successfully.',
-      results
+      results,
+      alerts
     });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Fetch latest notifications & alerts
+app.get('/api/notifications', (req, res) => {
+  try {
+    const alertsPath = path.join(DATA_DIR, 'alerts.json');
+    if (!fs.existsSync(alertsPath)) {
+      return res.json({ hasAlerts: false, alerts: [] });
+    }
+    const alerts = JSON.parse(fs.readFileSync(alertsPath, 'utf8'));
+    res.json({ hasAlerts: true, alerts });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -112,23 +137,24 @@ app.get('/api/results', (req, res) => {
   try {
     const resultsPath = path.join(DATA_DIR, 'results.json');
     const auditPath = path.join(DATA_DIR, 'audit_log.json');
+    const alertsPath = path.join(DATA_DIR, 'alerts.json');
 
     if (!fs.existsSync(resultsPath)) {
       return res.json({
         hasData: false,
-        message: 'No reconciliation results found yet. Please run reconciliation or upload files.'
+        message: 'No reconciliation results found yet.'
       });
     }
 
     const results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
-    const auditLog = fs.existsSync(auditPath)
-      ? JSON.parse(fs.readFileSync(auditPath, 'utf8'))
-      : [];
+    const auditLog = fs.existsSync(auditPath) ? JSON.parse(fs.readFileSync(auditPath, 'utf8')) : [];
+    const alerts = fs.existsSync(alertsPath) ? JSON.parse(fs.readFileSync(alertsPath, 'utf8')) : [];
 
     res.json({
       hasData: true,
       results,
-      auditLog
+      auditLog,
+      alerts
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

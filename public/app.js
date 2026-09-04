@@ -30,14 +30,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const countAi = document.getElementById('count-ai');
   const countUnresolved = document.getElementById('count-unresolved');
 
+  const alertsContainer = document.getElementById('alerts-container');
   const auditTableBody = document.getElementById('audit-table-body');
   const exceptionsTableBody = document.getElementById('exceptions-table-body');
 
+  const alertsTotalCount = document.getElementById('alerts-total-count');
   const auditTotalCount = document.getElementById('audit-total-count');
   const exceptionsTotalCount = document.getElementById('exceptions-total-count');
 
   let currentResults = null;
   let currentAuditLog = [];
+  let currentAlerts = [];
 
   let settlementsFileContent = null;
   let ledgerFileContent = null;
@@ -110,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
       if (data.success) {
         currentResults = data.results;
+        currentAlerts = data.alerts || [];
         fetchResults();
         showBanner(`Successfully reconciled real files! ${data.message}`, 'info');
         uploadPanel.classList.add('hidden');
@@ -190,6 +194,7 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
       const data = await res.json();
       if (data.success) {
         currentResults = data.results;
+        currentAlerts = data.alerts || [];
         fetchResults(); // Refresh view
         if (simulateFailure) {
           showBanner('Failure recovery demonstrated! AI errors caught cleanly and degraded to "unresolved — flagged for human review" without crashing.', 'info');
@@ -213,6 +218,7 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
       if (data.hasData) {
         currentResults = data.results;
         currentAuditLog = data.auditLog;
+        currentAlerts = data.alerts || [];
         renderDashboard();
       }
     } catch (err) {
@@ -238,13 +244,37 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
     countAi.textContent = m.layerBreakdown.ai;
     countUnresolved.textContent = m.layerBreakdown.unresolvedSettlements;
 
+    alertsTotalCount.textContent = currentAlerts.length;
     auditTotalCount.textContent = currentAuditLog.length;
 
     const exceptionsList = currentResults.exceptions?.unresolvedSettlements || [];
     exceptionsTotalCount.textContent = exceptionsList.length;
 
+    renderAlertsContainer();
     renderAuditTable();
     renderExceptionsTable(exceptionsList);
+  }
+
+  function renderAlertsContainer() {
+    if (!currentAlerts || currentAlerts.length === 0) {
+      alertsContainer.innerHTML = '<div class="empty-state">No active alerts generated yet. Run reconciliation to analyze risk.</div>';
+      return;
+    }
+
+    alertsContainer.innerHTML = currentAlerts.map(alert => {
+      const severityClass = alert.severity || 'info';
+      const timeStr = alert.timestamp ? new Date(alert.timestamp).toLocaleTimeString('en-IN') : '';
+
+      return `
+        <div class="alert-card ${severityClass}">
+          <div class="alert-card-header">
+            <span class="alert-card-title">${escapeHtml(alert.title)}</span>
+            <span class="alert-card-time">${timeStr}</span>
+          </div>
+          <p class="alert-card-msg">${escapeHtml(alert.message)}</p>
+        </div>
+      `;
+    }).join('');
   }
 
   function renderAuditTable() {

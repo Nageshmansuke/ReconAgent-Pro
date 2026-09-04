@@ -12,6 +12,7 @@ import AuditCertificateModal from './components/AuditCertificateModal.jsx';
 import { Bell, FileText, AlertTriangle, ShieldAlert, Award } from 'lucide-react';
 
 export default function App() {
+  const [theme, setTheme] = useState(() => localStorage.getItem('reconagent_theme') || 'dark');
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isCertOpen, setIsCertOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('alerts'); // 'alerts' | 'security' | 'audit' | 'exceptions'
@@ -22,6 +23,18 @@ export default function App() {
   const [auditLogs, setAuditLogs] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [securityAnomalies, setSecurityAnomalies] = useState([]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'light') {
+      root.classList.add('light');
+      root.classList.remove('dark');
+    } else {
+      root.classList.add('dark');
+      root.classList.remove('light');
+    }
+    localStorage.setItem('reconagent_theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     fetchResults();
@@ -42,6 +55,10 @@ export default function App() {
     }
   };
 
+  const handleToggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
   const handleGenerateDemo = async () => {
     setLoadingAction('generate');
     setStatusMessage({ type: 'info', text: 'Generating synthetic dataset with realistic noise...' });
@@ -51,7 +68,7 @@ export default function App() {
       if (data.success) {
         setStatusMessage({
           type: 'info',
-          text: `Generated synthetic dataset: ${data.summary.settlementsCount} settlements, ${data.summary.internalLedgerCount} ledger orders. Now click "Run Pipeline".`
+          text: `Generated synthetic dataset: ${data.summary.settlementsCount} settlements, ${data.summary.internalLedgerCount} ledger orders. Click "Run Pipeline" to process.`
         });
       } else {
         setStatusMessage({ type: 'error', text: `Error: ${data.error}` });
@@ -119,23 +136,25 @@ export default function App() {
   const unresolvedCount = results?.exceptions?.unresolvedSettlements?.length || 0;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 min-h-screen flex flex-col">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 min-h-screen flex flex-col">
       <Header
         onOpenUpload={() => setIsUploadOpen(true)}
         onGenerateDemo={handleGenerateDemo}
         onRunPipeline={() => handleRunPipeline(false)}
         onSimulateFailure={() => handleRunPipeline(true)}
         loadingAction={loadingAction}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
       />
 
       {statusMessage && (
-        <div className={`p-4 rounded-xl mb-6 font-medium text-sm border flex justify-between items-center ${
+        <div className={`p-4 rounded-xl mb-6 font-medium text-xs sm:text-sm border flex justify-between items-center transition-all ${
           statusMessage.type === 'error'
             ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
-            : 'bg-[#F5C453]/10 border-[#F5C453]/30 text-[#F5C453]'
+            : 'bg-amber-500/10 border-amber-500/30 text-amber-500'
         }`}>
           <span>{statusMessage.text}</span>
-          <button onClick={() => setStatusMessage(null)} className="text-xs opacity-60 hover:opacity-100">&times;</button>
+          <button onClick={() => setStatusMessage(null)} className="text-sm opacity-60 hover:opacity-100 font-bold ml-2">&times;</button>
         </div>
       )}
 
@@ -147,63 +166,63 @@ export default function App() {
         <AskReconCopilot />
 
         {/* Tab Controls & Feature 5 Certificate Button */}
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-4 border-b border-[#1E2532] pb-2">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6 border-b border-[var(--border-dim)] pb-3">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setActiveTab('alerts')}
-              className={`btn-tab flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all ${
                 activeTab === 'alerts'
-                  ? 'bg-[#12161F] text-[#F5C453] border border-[#1E2532]'
-                  : 'text-[#9CA3AF] hover:text-white'
+                  ? 'bg-[var(--bg-card)] text-amber-500 border border-[var(--border-bright)] shadow-md'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)]'
               }`}
             >
-              <Bell className="w-4 h-4 text-[#F5C453]" />
+              <Bell className="w-4 h-4 text-amber-500" />
               Alerts Center ({alerts.length})
             </button>
 
             <button
               onClick={() => setActiveTab('security')}
-              className={`btn-tab flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all ${
                 activeTab === 'security'
-                  ? 'bg-[#12161F] text-[#F43F5E] border border-[#1E2532]'
-                  : 'text-[#9CA3AF] hover:text-white'
+                  ? 'bg-[var(--bg-card)] text-rose-500 border border-[var(--border-bright)] shadow-md'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)]'
               }`}
             >
-              <ShieldAlert className="w-4 h-4 text-[#F43F5E]" />
-              Fraud & Security Radar ({securityAnomalies.length})
+              <ShieldAlert className="w-4 h-4 text-rose-500" />
+              Security Radar ({securityAnomalies.length})
             </button>
 
             <button
               onClick={() => setActiveTab('audit')}
-              className={`btn-tab flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all ${
                 activeTab === 'audit'
-                  ? 'bg-[#12161F] text-[#38BDF8] border border-[#1E2532]'
-                  : 'text-[#9CA3AF] hover:text-white'
+                  ? 'bg-[var(--bg-card)] text-cyan-500 border border-[var(--border-bright)] shadow-md'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)]'
               }`}
             >
-              <FileText className="w-4 h-4 text-[#38BDF8]" />
+              <FileText className="w-4 h-4 text-cyan-500" />
               Audit Trail ({auditLogs.length})
             </button>
 
             <button
               onClick={() => setActiveTab('exceptions')}
-              className={`btn-tab flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all ${
                 activeTab === 'exceptions'
-                  ? 'bg-[#12161F] text-[#F43F5E] border border-[#1E2532]'
-                  : 'text-[#9CA3AF] hover:text-white'
+                  ? 'bg-[var(--bg-card)] text-rose-400 border border-[var(--border-bright)] shadow-md'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)]'
               }`}
             >
-              <AlertTriangle className="w-4 h-4 text-[#F43F5E]" />
-              Honest Exceptions ({unresolvedCount})
+              <AlertTriangle className="w-4 h-4 text-rose-400" />
+              Exceptions ({unresolvedCount})
             </button>
           </div>
 
           {/* Feature 5: Auditor & CA Sign-Off Certificate Button */}
           <button
             onClick={() => setIsCertOpen(true)}
-            className="btn btn-gold text-xs py-1.5"
+            className="btn btn-indigo text-xs py-2 px-4 shadow-lg shrink-0"
           >
-            <Award className="w-4 h-4" />
+            <Award className="w-4 h-4 text-amber-400" />
             📜 CA Audit Certificate
           </button>
         </div>
@@ -227,8 +246,8 @@ export default function App() {
         results={results}
       />
 
-      <footer className="mt-12 pt-6 border-t border-[#1E2532] text-center text-xs text-[#9CA3AF]">
-        <p>ReconAgent Pro — Deterministic-First AI Finance Controller | Built for Razorpay AI Buildathon 2026</p>
+      <footer className="mt-12 pt-6 border-t border-[var(--border-dim)] text-center text-xs text-[var(--text-tertiary)]">
+        <p>ReconAgent Pro — Multi-Source Real-Time AI Finance Controller | Built for Razorpay AI Buildathon 2026</p>
       </footer>
     </div>
   );

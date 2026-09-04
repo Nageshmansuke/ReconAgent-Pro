@@ -88,21 +88,21 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
-      <div className="glass-panel w-full max-w-2xl p-6 bg-[#0E121A] border-[#2A3346] shadow-2xl relative">
+      <div className="glass-panel w-full max-w-2xl p-6 bg-[var(--bg-card)] border-[var(--border-bright)] shadow-2xl relative">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-[#9CA3AF] hover:text-white p-1 rounded-lg transition-all"
+          className="absolute top-4 right-4 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] p-1 rounded-lg transition-all"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 rounded-xl bg-[#F5C453]/10 text-[#F5C453] border border-[#F5C453]/20">
+          <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
             <UploadCloud className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white">📁 Reconcile Your Real Business Data</h3>
-            <p className="text-xs text-[#9CA3AF]">Upload CSV or JSON settlement & sales ledger exports from Razorpay, Stripe, QuickBooks, Tally, or ERPs.</p>
+            <h3 className="text-lg font-bold text-[var(--text-primary)]">📁 Reconcile Your Real Business Data</h3>
+            <p className="text-xs text-[var(--text-secondary)]">Upload CSV or JSON settlement & sales ledger exports from Razorpay, Stripe, QuickBooks, Tally, or ERPs.</p>
           </div>
         </div>
 
@@ -114,11 +114,11 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {/* Settlement File Dropzone */}
-          <div className="bg-[#0A0C10] border-2 border-dashed border-[#2A3346] hover:border-[#F5C453] rounded-xl p-5 text-center transition-all">
+          <div className="bg-[var(--bg-main)] border-2 border-dashed border-[var(--border-dim)] hover:border-amber-500 rounded-xl p-5 text-center transition-all">
             <label className="cursor-pointer flex flex-col items-center gap-2">
-              <FileText className="w-8 h-8 text-[#F5C453]" />
-              <span className="text-sm font-semibold text-white">1. Gateway Settlement File</span>
-              <span className="text-xs text-[#9CA3AF]">Razorpay / Stripe CSV or JSON</span>
+              <FileText className="w-8 h-8 text-amber-500" />
+              <span className="text-sm font-semibold text-[var(--text-primary)]">1. Gateway Settlement File</span>
+              <span className="text-xs text-[var(--text-secondary)]">Razorpay / Stripe CSV or JSON</span>
               <input
                 type="file"
                 accept=".csv, .json, text/csv, application/json"
@@ -127,7 +127,7 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
               />
             </label>
             {settlementFile && (
-              <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#10B981]/10 text-[#34D399] text-xs font-mono">
+              <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-500 text-xs font-mono">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 {settlementFile.name}
               </div>
@@ -135,11 +135,11 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
           </div>
 
           {/* Sales Ledger Dropzone */}
-          <div className="bg-[#0A0C10] border-2 border-dashed border-[#2A3346] hover:border-[#38BDF8] rounded-xl p-5 text-center transition-all">
+          <div className="bg-[var(--bg-main)] border-2 border-dashed border-[var(--border-dim)] hover:border-cyan-500 rounded-xl p-5 text-center transition-all">
             <label className="cursor-pointer flex flex-col items-center gap-2">
-              <FileText className="w-8 h-8 text-[#38BDF8]" />
-              <span className="text-sm font-semibold text-white">2. Sales Ledger File</span>
-              <span className="text-xs text-[#9CA3AF]">Tally / QuickBooks CSV or JSON</span>
+              <FileText className="w-8 h-8 text-cyan-500" />
+              <span className="text-sm font-semibold text-[var(--text-primary)]">2. Sales Ledger File</span>
+              <span className="text-xs text-[var(--text-secondary)]">Tally / QuickBooks CSV or JSON</span>
               <input
                 type="file"
                 accept=".csv, .json, text/csv, application/json"
@@ -148,7 +148,7 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
               />
             </label>
             {ledgerFile && (
-              <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#10B981]/10 text-[#34D399] text-xs font-mono">
+              <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-500 text-xs font-mono">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 {ledgerFile.name}
               </div>
@@ -156,11 +156,11 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-[#1E2532]">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-[var(--border-dim)]">
           <button
             onClick={downloadSampleTemplates}
             type="button"
-            className="btn btn-outline text-xs text-[#9CA3AF] hover:text-white"
+            className="btn btn-outline text-xs text-[var(--text-secondary)]"
           >
             <Download className="w-3.5 h-3.5" />
             📥 Download Sample CSV Templates
@@ -169,7 +169,7 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
           <button
             onClick={handleSubmit}
             disabled={!settlementContent || !ledgerContent || isProcessing}
-            className="btn btn-gold w-full sm:w-auto"
+            className="btn btn-emerald w-full sm:w-auto"
           >
             <Play className={`w-4 h-4 ${isProcessing ? 'animate-spin' : ''}`} />
             {isProcessing ? 'Processing Real Data...' : '🚀 Run Real-Time Reconciliation'}

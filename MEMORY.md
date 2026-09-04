@@ -20,12 +20,13 @@ Each entry should be short and factual: what happened, what you decided, what's 
 - **Next step:** Phase 1: Synthetic Data Generator (src/generator.js).
 
 
-### [Timestamp] — Phase 1: Synthetic Data Generator
-- **What happened:**
-- **Decisions made:**
-- **Currently working:**
-- **Blockers/issues:**
-- **Next step:**
+### [2026-09-04] — Phase 1: Synthetic Data Generator
+- **What happened:** Built `src/generator.js` producing realistic test data (72 gateway settlements, 69 internal ledger records, 76 ground truth answers). Included noise types: exact matches, fee-adjusted amounts, date drift (1-3 days), reference/name typos, split payments, duplicate settlements, missing settlements, and missing ledger entries.
+- **Decisions made:** Implemented LCG pseudo-random generator with seed support for deterministic, reproducible test runs.
+- **Currently working:** Generated data saved to `/data/gateway_settlements.json`, `/data/internal_ledger.json`, `/data/ground_truth.json`.
+- **Blockers/issues:** None.
+- **Next step:** Phase 2: Layer 1 (Exact Match matcher + unit tests).
+
 
 ### [Timestamp] — Phase 2: Exact Match
 - **What happened:**

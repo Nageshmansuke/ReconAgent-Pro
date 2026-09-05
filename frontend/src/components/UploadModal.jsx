@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, FileUp, CheckCircle2 } from 'lucide-react';
 
 export default function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   const [settlementFile, setSettlementFile] = useState(null);
@@ -87,75 +87,80 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="w-full max-w-xl p-6 bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] rounded-lg shadow-2xl relative">
+    <div className="certificate-overlay">
+      <div className="certificate-modal" style={{ maxWidth: '580px', padding: '28px' }}>
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+          style={{ position: 'absolute', top: '18px', right: '18px', background: 'transparent', border: 0, color: 'var(--muted)', cursor: 'pointer' }}
+          aria-label="Close modal"
         >
-          <X className="w-4 h-4" />
+          <X size={18} />
         </button>
 
-        <div className="mb-6">
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">
+        <div style={{ marginBottom: '22px' }}>
+          <span className="eyebrow" style={{ color: 'var(--cyan)' }}>Data Ingestion</span>
+          <h3 style={{ margin: '4px 0 0', fontSize: '18px', color: 'var(--text)' }}>
             Reconcile Operational Data Files
           </h3>
-          <p className="text-xs text-[var(--text-secondary)] mt-1">
-            Upload CSV or JSON files for gateway settlement statements and sales ledger exports.
+          <p style={{ margin: '6px 0 0', fontSize: '12px', color: 'var(--muted)' }}>
+            Upload CSV or JSON statements for gateway settlements and internal sales ledgers.
           </p>
         </div>
 
         {errorMsg && (
-          <div className="mb-4 p-3 rounded bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+          <div style={{ marginBottom: '16px', padding: '10px 12px', borderRadius: '8px', background: '#ff818122', border: '1px solid #ff818166', color: 'var(--red)', fontSize: '12px' }}>
             {errorMsg}
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          {/* Settlement File Dropzone */}
-          <div className="bg-[var(--bg-surface)] border border-dashed border-[var(--border-subtle)] hover:border-[var(--border-hover)] rounded-lg p-4 text-center">
-            <label className="cursor-pointer flex flex-col items-center gap-1.5">
-              <span className="text-xs font-semibold text-[var(--text-primary)]">1. Gateway Settlement File</span>
-              <span className="text-[11px] text-[var(--text-tertiary)]">Razorpay / Stripe CSV or JSON</span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', marginBottom: '22px' }}>
+          {/* Settlement Dropzone */}
+          <div style={{ border: '1px dashed var(--line)', background: 'var(--surface-2)', borderRadius: '12px', padding: '18px', textAlign: 'center' }}>
+            <label style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+              <FileUp size={22} style={{ color: 'var(--cyan)' }} />
+              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)' }}>1. Gateway Settlement File</span>
+              <span style={{ fontSize: '10px', color: 'var(--muted)' }}>Razorpay / Stripe CSV or JSON</span>
               <input
                 type="file"
                 accept=".csv, .json, text/csv, application/json"
                 onChange={handleSettlementChange}
-                className="hidden"
+                style={{ display: 'none' }}
               />
             </label>
             {settlementFile && (
-              <div className="mt-2 text-xs font-mono text-[var(--color-success)] truncate">
-                ✓ {settlementFile.name}
+              <div style={{ marginTop: '10px', fontSize: '11px', color: 'var(--cyan)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', fontWeight: 600 }}>
+                <CheckCircle2 size={13} /> {settlementFile.name}
               </div>
             )}
           </div>
 
-          {/* Sales Ledger Dropzone */}
-          <div className="bg-[var(--bg-surface)] border border-dashed border-[var(--border-subtle)] hover:border-[var(--border-hover)] rounded-lg p-4 text-center">
-            <label className="cursor-pointer flex flex-col items-center gap-1.5">
-              <span className="text-xs font-semibold text-[var(--text-primary)]">2. Sales Ledger File</span>
-              <span className="text-[11px] text-[var(--text-tertiary)]">Tally / QuickBooks CSV or JSON</span>
+          {/* Ledger Dropzone */}
+          <div style={{ border: '1px dashed var(--line)', background: 'var(--surface-2)', borderRadius: '12px', padding: '18px', textAlign: 'center' }}>
+            <label style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+              <FileUp size={22} style={{ color: 'var(--cyan)' }} />
+              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)' }}>2. Sales Ledger File</span>
+              <span style={{ fontSize: '10px', color: 'var(--muted)' }}>Tally / QuickBooks CSV or JSON</span>
               <input
                 type="file"
                 accept=".csv, .json, text/csv, application/json"
                 onChange={handleLedgerChange}
-                className="hidden"
+                style={{ display: 'none' }}
               />
             </label>
             {ledgerFile && (
-              <div className="mt-2 text-xs font-mono text-[var(--color-success)] truncate">
-                ✓ {ledgerFile.name}
+              <div style={{ marginTop: '10px', fontSize: '11px', color: 'var(--cyan)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', fontWeight: 600 }}>
+                <CheckCircle2 size={13} /> {ledgerFile.name}
               </div>
             )}
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-[var(--border-subtle)]">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', paddingTop: '16px', borderTop: '1px solid var(--line)', flexWrap: 'wrap' }}>
           <button
             onClick={downloadSampleTemplates}
             type="button"
-            className="btn-ghost text-xs w-full sm:w-auto"
+            className="secondary-btn"
+            style={{ fontSize: '11px' }}
           >
             Download Sample CSVs
           </button>
@@ -163,7 +168,8 @@ ORD_REAL_5003,pay_REAL_103_ST,UTR987654321003,3200,2026-08-15T12:00:00Z,Vikram S
           <button
             onClick={handleSubmit}
             disabled={!settlementContent || !ledgerContent || isProcessing}
-            className="btn-primary-accent text-xs w-full sm:w-auto"
+            className="primary-btn"
+            style={{ fontSize: '11px' }}
           >
             {isProcessing ? 'Processing Data...' : 'Run Real-Time Reconciliation'}
           </button>

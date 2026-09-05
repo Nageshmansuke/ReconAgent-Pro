@@ -114,15 +114,28 @@ Evaluate whether the settlement matches any ledger record. Reply strictly with t
       let responseText = '';
 
       if (googleAI) {
-        const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-        const response = await googleAI.models.generateContent({
-          model: modelName,
-          contents: userPrompt,
-          config: {
-            systemInstruction: systemPrompt,
-            responseMimeType: 'application/json'
-          }
-        });
+        const preferredModel = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+        let response;
+        try {
+          response = await googleAI.models.generateContent({
+            model: preferredModel,
+            contents: userPrompt,
+            config: {
+              systemInstruction: systemPrompt,
+              responseMimeType: 'application/json'
+            }
+          });
+        } catch (modelErr) {
+          // Fallback to gemini-1.5-flash if preferred model fails or returns 404
+          response = await googleAI.models.generateContent({
+            model: 'gemini-1.5-flash',
+            contents: userPrompt,
+            config: {
+              systemInstruction: systemPrompt,
+              responseMimeType: 'application/json'
+            }
+          });
+        }
         responseText = response.text || '';
       } else if (anthropic) {
         const modelName = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022';
@@ -169,9 +182,10 @@ Evaluate whether the settlement matches any ledger record. Reply strictly with t
       }
     } catch (err) {
       console.warn(`AI Escalation error (${provider}) for settlement ${settl.settlement_id}:`, err.message);
+      const cleanErr = err.message ? err.message.split('\n')[0].replace(/"/g, "'") : 'API timeout or model unavailable';
       remainingSettlements.push({
         ...settl,
-        unresolved_reason: `unresolved — flagged for human review (AI error: ${err.message})`
+        unresolved_reason: `unresolved — flagged for human review (AI note: ${cleanErr})`
       });
     }
   }

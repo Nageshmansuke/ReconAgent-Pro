@@ -68,15 +68,27 @@ Answer the question based on the provided data context. Return strictly JSON.`;
     try {
       let responseText = '';
       if (googleAI) {
-        const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-        const response = await googleAI.models.generateContent({
-          model: modelName,
-          contents: userPrompt,
-          config: {
-            systemInstruction: systemPrompt,
-            responseMimeType: 'application/json'
-          }
-        });
+        const preferredModel = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+        let response;
+        try {
+          response = await googleAI.models.generateContent({
+            model: preferredModel,
+            contents: userPrompt,
+            config: {
+              systemInstruction: systemPrompt,
+              responseMimeType: 'application/json'
+            }
+          });
+        } catch (mErr) {
+          response = await googleAI.models.generateContent({
+            model: 'gemini-1.5-flash',
+            contents: userPrompt,
+            config: {
+              systemInstruction: systemPrompt,
+              responseMimeType: 'application/json'
+            }
+          });
+        }
         responseText = response.text || '';
       } else if (anthropic) {
         const modelName = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022';
